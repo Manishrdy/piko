@@ -19,6 +19,7 @@ import app.morphe.extension.instagram.settings.SettingsStatus;
 
 public class HookFlags {
     private static Map<String, Boolean> BOOL_FLAGS = new HashMap<>();
+    private static Map<String, Long> LONG_FLAGS = new HashMap<>();
     private static DeveloperOptions developerOptions = new DeveloperOptions();
 
     private static void onboardingPermissionPromptFlags() {
@@ -52,6 +53,17 @@ public class HookFlags {
         BOOL_FLAGS.put("82771::0", false); //igx_foundation_litho_stories_tray::is_litho_stories_tray_enabled
 //        BOOL_FLAGS.put("109730", false); //ig_android_ai_discovery_menu
 //        BOOL_FLAGS.put("80654", false); //ig_meta_ai_cdd_reels_viewer
+    }
+
+    private static void restoreSearchRecentsFlags() {
+        BOOL_FLAGS.put("111509::3", false); //ig_search_ta_nullstate_suggestions::is_android_enabled
+        BOOL_FLAGS.put("111509::9", false); //ig_search_ta_nullstate_suggestions::collapsible_recent_items_enabled_android
+        BOOL_FLAGS.put("111509::21", false); //ig_search_ta_nullstate_suggestions::enable_h_scroll_recent_android
+        BOOL_FLAGS.put("111509::25", false); //ig_search_ta_nullstate_suggestions::enable_search_bar_hint_carousel_android
+        BOOL_FLAGS.put("111509::26", false); //ig_search_ta_nullstate_suggestions::enable_search_bar_hint_carousel_dynamic_android
+        BOOL_FLAGS.put("63806::0", false); //ig_su_in_search_null_state::is_enabled
+        LONG_FLAGS.put("111509::17", 25L); //ig_search_ta_nullstate_suggestions::android_max_recent_count
+        LONG_FLAGS.put("111509::1", 25L); //ig_search_ta_nullstate_suggestions::max_recent_count
     }
 
     private static void profileActionBarFlags() {
@@ -101,6 +113,21 @@ public class HookFlags {
 
             String configId = developerOptionsItem.getConfigId();
             return BOOL_FLAGS.getOrDefault(configId, null);
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+        }
+        return null;
+    }
+
+    public static Long handleLongFlags(long mobileConfigSpecifier) {
+        try {
+            DeveloperOptionsItem developerOptionsItem = new DeveloperOptionsItem(mobileConfigSpecifier);
+            String universalId = developerOptionsItem.getUniversalId();
+            Long universalFlag = LONG_FLAGS.getOrDefault(universalId, null);
+            if(universalFlag!=null) return universalFlag;
+
+            String configId = developerOptionsItem.getConfigId();
+            return LONG_FLAGS.getOrDefault(configId, null);
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
