@@ -23,10 +23,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
-// Real, unobfuscated class name -- confirmed via apktool/baksmali against
-// the real 439.0.0.37.89 APK.
-private const val FOLLOW_LIST_DATA_CLASS = "Lcom/instagram/follow/analytics/FollowListData;"
-
 @Suppress("unused")
 val followerTrackerPatch =
     bytecodePatch(
