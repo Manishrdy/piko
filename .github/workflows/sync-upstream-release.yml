@@ -1,0 +1,139 @@
+name: Sync upstream and release
+
+# Tracks crimera/piko's `dev` branch (prerelease channel), rebuilds the .mpp
+# with this fork's own patches layered on top, and publishes an unsigned
+# prerelease. Runs only on this fork -- upstream itself has no use for it.
+#
+# Operates entirely on this fork's `dev` branch (also the fork's default
+# branch, since GitHub's `schedule` trigger only ever fires from the default
+# branch). `main` is never touched by this workflow.
+
+on:
+  schedule:
+    - cron: '0 0,12 * * *' # twice daily: 00:00 and 12:00 UTC
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Build and release even if upstream/dev has nothing new'
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    name: Sync upstream/dev and release
+    if: github.repository == 'Manishrdy/piko'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: dev
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream/dev
+        run: |
+          git remote add upstream https://github.com/crimera/piko.git
+          git fetch upstream dev
+
+      - name: Check whether upstream is ahead
+        id: check
+        run: |
+          if git merge-base --is-ancestor upstream/dev HEAD; then
+            ahead=false
+          else
+            ahead=true
+          fi
+          echo "ahead=$ahead" >> "$GITHUB_OUTPUT"
+          if [ "$ahead" = "true" ] || [ "${{ inputs.force }}" = "true" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Merge upstream/dev
+        if: steps.check.outputs.proceed == 'true'
+        # -X theirs: upstream wins on any line-level conflict (e.g. our
+        # patches-bundle.json/README overlay from the previous sync). Files
+        # that only exist on our side -- e.g. fork-only patches under
+        # patches/src/main/kotlin/app/crimera/patches/fork/ -- are untouched
+        # by this merge since upstream has nothing to conflict with there.
+        run: git merge upstream/dev --no-edit -X theirs
+
+      - name: Read version
+        if: steps.check.outputs.proceed == 'true'
+        id: version
+        run: echo "value=$(grep '^version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Check if this version was already released
+        if: steps.check.outputs.proceed == 'true'
+        id: release_check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.value }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Java
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        uses: actions/setup-java@v5.6.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configure Morphe registry credentials
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        run: |
+          mkdir -p ~/.gradle
+          {
+            echo "gpr.user=${{ secrets.GPR_USER }}"
+            echo "gpr.key=${{ secrets.GPR_KEY }}"
+          } >> ~/.gradle/gradle.properties
+
+      - name: Build patches bundle
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        run: ./gradlew generatePatchesList buildAndroid --no-daemon
+
+      - name: Repoint bundle metadata to this fork
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.value }}"
+          jq --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/patches-$VERSION.mpp" \
+             --arg version "$VERSION" \
+             'del(.signature_download_url) | .download_url = $url | .version = $version' \
+             patches-bundle.json > patches-bundle.json.tmp
+          mv patches-bundle.json.tmp patches-bundle.json
+          jq --arg version "$VERSION" '.version = $version' patches-list.json > patches-list.json.tmp
+          mv patches-list.json.tmp patches-list.json
+          python3 .github/scripts/generate_patches_readme.py "$GITHUB_REPOSITORY" dev patches-list.json README.md
+
+      - name: Commit fork overlay
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        run: |
+          git add patches-bundle.json patches-list.json README.md
+          git diff --cached --quiet || git commit -m "chore: sync upstream/dev v${{ steps.version.outputs.value }} [skip ci]"
+
+      - name: Push
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        run: git push origin dev
+
+      - name: Create release
+        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.version.outputs.value }}" \
+            patches/build/libs/patches-${{ steps.version.outputs.value }}.mpp \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v${{ steps.version.outputs.value }}" \
+            --notes "Synced from crimera/piko dev @ $(git rev-parse --short upstream/dev)" \
+            --prerelease

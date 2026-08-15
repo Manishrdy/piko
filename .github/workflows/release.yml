@@ -9,6 +9,9 @@ on:
 jobs:
   release:
     name: Release
+    # Only the upstream repo has the GPG/packages secrets this job needs.
+    # Forks (e.g. sync-based forks) skip it to avoid a red X on every push.
+    if: github.repository == 'crimera/piko'
     permissions:
       contents: write
       packages: write
