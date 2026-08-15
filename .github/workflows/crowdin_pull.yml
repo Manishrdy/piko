@@ -7,6 +7,8 @@ on:
 jobs:
   pull:
     name: Pull translations from Crowdin
+    # Crowdin credentials only exist upstream; this fork has no translation project of its own.
+    if: github.repository == 'crimera/piko'
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -34,7 +36,7 @@ jobs:
 
   merge:
     name: Squash merge Crowdin into Dev
-    if: github.event_name == 'workflow_dispatch'
+    if: github.repository == 'crimera/piko' && github.event_name == 'workflow_dispatch'
     needs: pull
     permissions:
       contents: write

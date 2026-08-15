@@ -16,6 +16,8 @@ env:
 jobs:
   pull-request:
     name: Open pull request
+    # This fork never promotes dev into main via PR -- see sync-upstream-release.yml.
+    if: github.repository == 'crimera/piko'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

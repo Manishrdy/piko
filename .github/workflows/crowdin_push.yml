@@ -11,6 +11,8 @@ on:
 jobs:
   push:
     name: Push strings
+    # Crowdin credentials only exist upstream; this fork has no translation project of its own.
+    if: github.repository == 'crimera/piko'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout dev
