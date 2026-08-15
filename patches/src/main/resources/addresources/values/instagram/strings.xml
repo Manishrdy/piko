@@ -321,4 +321,20 @@
     <string name="piko_filter_story_minimum_item_count_desc">Stories having less than x items will be hidden (default 1)</string>
     <string name="piko_filter_story_maximum_item_count">Maximum story items</string>
     <string name="piko_filter_story_maximum_item_count_desc">Stories having more than x items will be hidden (default 9999)</string>
+
+    <!-- Follower Tracker Section -->
+    <string name="piko_category_follower_tracker">Follower Tracker</string>
+    <string name="piko_follower_tracker_enabled">Track followers/following</string>
+    <string name="piko_follower_tracker_enabled_desc">Detects who followed or unfollowed you by comparing what you see each time you open your Followers/Following list. Never polls or makes extra requests -- only looks at data your own browsing already loaded.</string>
+    <string name="piko_follower_tracker_view_history">View history</string>
+    <string name="piko_follower_tracker_history_title">Follower activity</string>
+    <string name="piko_follower_tracker_history_empty">No follow/unfollow activity detected yet.</string>
+    <string name="piko_follower_tracker_notif_title_followers">Followers changed</string>
+    <string name="piko_follower_tracker_notif_title_following">Following changed</string>
+    <string name="piko_follower_tracker_notif_new">%d new: %s</string>
+    <string name="piko_follower_tracker_notif_gone">%d gone: %s</string>
+    <string name="piko_follower_tracker_event_new_follower">%s followed you -- %s %s</string>
+    <string name="piko_follower_tracker_event_unfollowed_you">%s unfollowed you -- %s %s</string>
+    <string name="piko_follower_tracker_event_new_following">You followed %s -- %s %s</string>
+    <string name="piko_follower_tracker_event_unfollowed">You unfollowed %s -- %s %s</string>
 </resources>

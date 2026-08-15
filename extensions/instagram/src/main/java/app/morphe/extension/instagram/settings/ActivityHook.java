@@ -50,6 +50,8 @@ public class ActivityHook {
             intent = new Intent(ctx,RestorePrefActivity.class);
         } else if (bundleKey.equals("piko_download_set_path")) {
             intent = new Intent(ctx,FolderPickerActivity.class);
+        } else if (bundleKey.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)) {
+            intent = new Intent(ctx, app.morphe.extension.instagram.patches.followerTracker.HistoryActivity.class);
         }
         if(intent!=null){
             intent.putExtra(bundleKey,true);

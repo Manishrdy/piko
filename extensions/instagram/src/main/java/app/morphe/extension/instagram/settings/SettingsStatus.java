@@ -218,6 +218,11 @@ public class SettingsStatus {
     public static void storyFilters(){storyFilters = true;}
     public static boolean filterContentSection(){return storyFilters; }
 
+    // Follower tracker section.
+    public static boolean followerTracker = false;
+    public static void followerTracker() { followerTracker = true; }
+    public static boolean followerTrackerSection(){return followerTracker; }
+
 
         public static void loadStatusMap(){
         FLAGS.put(str("piko_disable_ads"),SettingsStatus.disableAds);
@@ -292,6 +297,7 @@ public class SettingsStatus {
         FLAGS.put(str("piko_enable_mark_chat_as_read"),SettingsStatus.markChatAsRead);
         FLAGS.put(str("piko_category_filter_content"),SettingsStatus.storyFilters);
         FLAGS.put(str("piko_category_rec_flags"),SettingsStatus.recommendedFlags);
+        FLAGS.put(str("piko_category_follower_tracker"),SettingsStatus.followerTracker);
 
     }
 

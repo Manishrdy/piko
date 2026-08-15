@@ -47,6 +47,8 @@ public class Constants {
     public static final String PIKO_FRAGMENT_DM = "piko_frag_dm";
     public static final String PIKO_FRAGMENT_FILTER_CONTENT = "piko_frag_filter_content";
     public static final String PIKO_FRAGMENT_REC_FLAGS = "piko_frag_rec_flags";
+    public static final String PIKO_FRAGMENT_FOLLOWER_TRACKER = "piko_frag_follower_tracker";
+    public static final String PIKO_FOLLOWER_TRACKER_VIEW_HISTORY = "piko_follower_tracker_view_history";
 
     public static void load() {
         ExtensionStrings.setDefaultPikoFolder(Constants.DEFAULT_PIKO_FOLDER);

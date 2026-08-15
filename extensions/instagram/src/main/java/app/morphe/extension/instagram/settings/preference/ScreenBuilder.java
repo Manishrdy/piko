@@ -785,6 +785,26 @@ public class ScreenBuilder {
         }
     }
 
+    public void followerTrackerSection() {
+        if (!SettingsStatus.followerTrackerSection()) return;
+
+        addPreference(
+                helper.switchPreference(
+                        str("piko_follower_tracker_enabled"),
+                        str("piko_follower_tracker_enabled_desc"),
+                        Settings.FOLLOWER_TRACKER_ENABLED
+                )
+        );
+
+        addPreference(
+                helper.buttonPreference(
+                        str("piko_follower_tracker_view_history"),
+                        "",
+                        Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY
+                )
+        );
+    }
+
     public void buildNavigationSection() {
         if (!(SettingsStatus.hideNavigationButtons)) return;
 
@@ -955,6 +975,16 @@ public class ScreenBuilder {
                             str("piko_category_filter_content"),
                             "",
                             Constants.PIKO_FRAGMENT_FILTER_CONTENT
+                    )
+            );
+        }
+
+        if (SettingsStatus.followerTrackerSection()){
+            addPreference(
+                    helper.buttonPreference(
+                            str("piko_category_follower_tracker"),
+                            "",
+                            Constants.PIKO_FRAGMENT_FOLLOWER_TRACKER
                     )
             );
         }

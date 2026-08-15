@@ -38,6 +38,7 @@ val addSettingsActivityPatch =
                     "app.morphe.extension.instagram.settings.preference.fragments.BackupPrefActivity",
                     "app.morphe.extension.instagram.settings.preference.fragments.RestorePrefActivity",
                     "app.morphe.extension.crimera.downloader.FolderPickerActivity",
+                    "app.morphe.extension.instagram.patches.followerTracker.HistoryActivity",
                 ).forEach { activityName ->
                     activity = document.createElement("activity")
                     activity.setAttribute("android:name", activityName)
