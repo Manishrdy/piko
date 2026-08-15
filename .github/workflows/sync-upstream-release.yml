@@ -71,27 +71,36 @@ jobs:
         id: version
         run: echo "value=$(grep '^version' gradle.properties | cut -d'=' -f2 | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
-      - name: Check if this version was already released
+      - name: Compute fork release tag
+        # Upstream owns `version` in gradle.properties, so we can't bump it
+        # ourselves without it getting clobbered on the next -X theirs merge.
+        # Instead the release tag is <upstream version>-fork.N, where N is
+        # one past the highest fork.N already released for that upstream
+        # version. This lets us cut any number of fork-only rebuilds (new
+        # patches, manual force-runs, etc.) off the same upstream base
+        # without ever colliding with an upstream tag or each other.
         if: steps.check.outputs.proceed == 'true'
-        id: release_check
+        id: tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "v${{ steps.version.outputs.value }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+          VERSION="${{ steps.version.outputs.value }}"
+          LAST_N=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1000 --json tagName --jq '.[].tagName' \
+            | grep -F "v$VERSION-fork." \
+            | sed "s/^v$VERSION-fork\.//" \
+            | sort -n | tail -1)
+          NEXT_N=$(( ${LAST_N:-0} + 1 ))
+          echo "value=v$VERSION-fork.$NEXT_N" >> "$GITHUB_OUTPUT"
 
       - name: Setup Java
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         uses: actions/setup-java@v5.6.0
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Configure Morphe registry credentials
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         run: |
           mkdir -p ~/.gradle
           {
@@ -100,40 +109,48 @@ jobs:
           } >> ~/.gradle/gradle.properties
 
       - name: Build patches bundle
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         run: ./gradlew generatePatchesList buildAndroid --no-daemon
 
-      - name: Repoint bundle metadata to this fork
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+      - name: Rename artifact to match fork tag
+        if: steps.check.outputs.proceed == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.value }}"
-          jq --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/patches-$VERSION.mpp" \
-             --arg version "$VERSION" \
+          TAG="${{ steps.tag.outputs.value }}"
+          mv "patches/build/libs/patches-${{ steps.version.outputs.value }}.mpp" "patches/build/libs/patches-${TAG#v}.mpp"
+
+      - name: Repoint bundle metadata to this fork
+        if: steps.check.outputs.proceed == 'true'
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          FILE_VERSION="${TAG#v}"
+          jq --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/patches-$FILE_VERSION.mpp" \
+             --arg version "$FILE_VERSION" \
              'del(.signature_download_url) | .download_url = $url | .version = $version' \
              patches-bundle.json > patches-bundle.json.tmp
           mv patches-bundle.json.tmp patches-bundle.json
-          jq --arg version "$VERSION" '.version = $version' patches-list.json > patches-list.json.tmp
+          jq --arg version "$FILE_VERSION" '.version = $version' patches-list.json > patches-list.json.tmp
           mv patches-list.json.tmp patches-list.json
           python3 .github/scripts/generate_patches_readme.py "$GITHUB_REPOSITORY" dev patches-list.json README.md
 
       - name: Commit fork overlay
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         run: |
           git add patches-bundle.json patches-list.json README.md
-          git diff --cached --quiet || git commit -m "chore: sync upstream/dev v${{ steps.version.outputs.value }} [skip ci]"
+          git diff --cached --quiet || git commit -m "chore: sync upstream/dev ${{ steps.tag.outputs.value }} [skip ci]"
 
       - name: Push
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         run: git push origin dev
 
       - name: Create release
-        if: steps.check.outputs.proceed == 'true' && steps.release_check.outputs.exists == 'false'
+        if: steps.check.outputs.proceed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${{ steps.version.outputs.value }}" \
-            patches/build/libs/patches-${{ steps.version.outputs.value }}.mpp \
+          TAG="${{ steps.tag.outputs.value }}"
+          gh release create "$TAG" \
+            "patches/build/libs/patches-${TAG#v}.mpp" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "v${{ steps.version.outputs.value }}" \
+            --title "$TAG" \
             --notes "Synced from crimera/piko dev @ $(git rev-parse --short upstream/dev)" \
             --prerelease
