@@ -53,12 +53,20 @@ public class Pref {
         return SharedPref.getBooleanPref(Settings.HIDE_SUGGESTED_CONTENT);
     }
 
+    public static boolean saveDeletedMessages() {
+        return SharedPref.getBooleanPref(Settings.SAVE_DELETED_MESSAGES);
+    }
+
     public static boolean openLinksExternally() {
         return SharedPref.getBooleanPref(Settings.OPEN_LINKS_EXTERNALLY);
     }
 
     public static boolean sanitizeShareLinks() {
         return SharedPref.getBooleanPref(Settings.SANITIZE_SHARE_LINKS);
+    }
+
+    public static String customSharingDomain() {
+        return SharedPref.getStringPref(Settings.CUSTOM_SHARING_DOMAIN);
     }
 
     public static boolean getTurnOnAllGhostModes() {

@@ -26,6 +26,7 @@ import app.morphe.extension.instagram.patches.devFlags.RecommendedFlags;
 import app.morphe.extension.instagram.constants.UI;
 import app.morphe.extension.instagram.constants.Constants;
 import app.morphe.extension.instagram.utils.InstaUtils;
+import app.morphe.extension.instagram.patches.dm.SavedMessagesHook;
 
 public class ButtonPref extends Preference {
     private final Context context;
@@ -81,6 +82,9 @@ public class ButtonPref extends Preference {
 
                     } else if (key.equals("piko_download_id_mapping")) {
                         DownloadMapping.downloadMapping();
+
+                    } else if (key.equals("view_deleted_messages")) {
+                        SavedMessagesHook.openDeletedMessages(context, false);
 
                     } else if (isFragmentNavigation(key)) {
                         FragmentHook.startFragment(key);
@@ -148,8 +152,7 @@ public class ButtonPref extends Preference {
                 || key.equals("piko_export_experiment_mappings")
                 || key.equals("piko_download_id_mapping")
                 || key.equals("piko_rec_flags_refresh_file")
-                || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)
-                || key.equals(Constants.PIKO_APP_ICON_PICKER)));
+                || key.equals("view_deleted_messages")));
     }
 
     private static boolean hasPressedHighlight(String key) {

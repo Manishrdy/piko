@@ -25,6 +25,7 @@ import  app.morphe.extension.instagram.patches.devFlags.RecommendedFlags;
 import  app.morphe.extension.instagram.patches.devFlags.Flag;
 
 import app.morphe.extension.crimera.downloader.StorageUtils;
+import app.morphe.extension.instagram.patches.Links;
 import app.morphe.extension.instagram.settings.SettingsStatus;
 import app.morphe.extension.instagram.settings.Settings;
 import app.morphe.extension.instagram.settings.preference.widgets.*;
@@ -237,6 +238,23 @@ public class ScreenBuilder {
             );
         }
 
+        if (SettingsStatus.saveDeletedMessages) {
+            addPreference(
+                    helper.switchPreference(
+                            str("piko_save_deleted_messages"),
+                            str("piko_save_deleted_messages_desc"),
+                            Settings.SAVE_DELETED_MESSAGES
+                    )
+            );
+            addPreference(
+                    helper.buttonPreference(
+                            str("piko_view_deleted_messages"),
+                            "",
+                            "view_deleted_messages"
+                    )
+            );
+        }
+
 
     }
 
@@ -320,6 +338,15 @@ public class ScreenBuilder {
                             str("piko_sanitize_share_links"),
                             "",
                             Settings.SANITIZE_SHARE_LINKS
+                    )
+            );
+        }
+        if (SettingsStatus.customSharingDomain) {
+            addPreference(
+                    helper.editTextPreference(
+                            str("piko_custom_sharing_domain"),
+                            Links.customSharingDomainSummary(Pref.customSharingDomain()),
+                            Settings.CUSTOM_SHARING_DOMAIN
                     )
             );
         }

@@ -56,8 +56,10 @@ public class SettingsStatus {
     }
     public static boolean sanitizeShareLinks = false;
     public static void sanitizeShareLinks() {sanitizeShareLinks = true;}
+    public static boolean customSharingDomain = false;
+    public static void customSharingDomain() {customSharingDomain = true;}
     public static boolean linksSection() {
-        return (openLinksExternally || sanitizeShareLinks);
+        return (openLinksExternally || sanitizeShareLinks || customSharingDomain);
     }
 
 
@@ -80,6 +82,10 @@ public class SettingsStatus {
     public static boolean viewDmAnonymously = false;
     public static void viewDmAnonymously() {
         viewDmAnonymously = true;
+    }
+    public static boolean saveDeletedMessages = false;
+    public static void saveDeletedMessages() {
+        saveDeletedMessages = true;
     }
     public static boolean ghostSection() {
         return (viewStoriesAnonymously || viewLiveAnonymously || disableScreenshotDetection || disableTypingStatus || viewDmAnonymously);
@@ -203,7 +209,7 @@ public class SettingsStatus {
     public static void unlimitedReplaysOnEphemeralMedia() {unlimitedReplaysOnEphemeralMedia = true;}
     public static boolean markChatAsRead = false;
     public static void markChatAsRead() { markChatAsRead = true; }
-    public static boolean dmSection(){ return markChatAsRead || unlimitedReplaysOnEphemeralMedia || disableTypingStatus || viewDmAnonymously ;}
+    public static boolean dmSection(){ return markChatAsRead || unlimitedReplaysOnEphemeralMedia || disableTypingStatus || viewDmAnonymously || saveDeletedMessages ;}
 
     //Download section.
     public static boolean downloadMedia = false;
@@ -278,12 +284,14 @@ public class SettingsStatus {
         FLAGS.put(str("piko_disable_swipe_to_create"), SettingsStatus.disableSwipeToCreate);
 
         FLAGS.put(str("piko_view_dm_anonymously"),SettingsStatus.viewDmAnonymously);
+        FLAGS.put(str("piko_save_deleted_messages"),SettingsStatus.saveDeletedMessages);
         FLAGS.put(str("piko_view_live_anonymously"),SettingsStatus.disableScreenshotDetection);
         FLAGS.put(str("piko_disable_typing_status"),SettingsStatus.disableTypingStatus);
         FLAGS.put(str("piko_more_profile_options"),SettingsStatus.viewLiveAnonymously);
         FLAGS.put(str("piko_view_stories_anonymously"),SettingsStatus.viewStoriesAnonymously);
 
         FLAGS.put(str("piko_sanitize_share_links"),SettingsStatus.sanitizeShareLinks);
+        FLAGS.put(str("piko_custom_sharing_domain"),SettingsStatus.customSharingDomain);
         FLAGS.put(str("piko_open_links_externally"),SettingsStatus.openLinksExternally);
         FLAGS.put(str("piko_download_voice_media"),SettingsStatus.downloadVoiceMessage);
         FLAGS.put(str("piko_download_with_external_downloader"),SettingsStatus.downloadWithExternalDownloader);
