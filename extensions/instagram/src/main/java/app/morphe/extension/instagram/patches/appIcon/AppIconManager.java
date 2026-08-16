@@ -40,11 +40,14 @@ import app.morphe.extension.crimera.sharedPreference.SharedPref;
 public final class AppIconManager {
 
     /**
-     * Alias name prefix used by the "Change app icon" patch for icons piko bundles.
-     * Deliberately outside the com.instagram.* namespace so the Clone patch, which
-     * rewrites com.instagram.android in manifest attribute values, leaves it alone.
+     * Meta-data key the patch writes on an alias it repointed at bundled artwork, holding
+     * the label to show for it.
+     *
+     * The bundled icons reuse Instagram's own alternate-icon aliases rather than adding
+     * new ones, so an alias keeps Instagram's name whatever artwork it carries and the
+     * name is no longer a usable label.
      */
-    public static final String PIKO_ALIAS_PREFIX = "app.morphe.extension.instagram.appicon.";
+    private static final String ICON_LABEL_MARKER = "app.morphe.piko.icon_label";
 
     /**
      * Meta-data key the patch attaches to Instagram's own launcher alias.
@@ -199,13 +202,15 @@ public final class AppIconManager {
                     new ComponentName(activityInfo.packageName, activityInfo.name);
             boolean isDefault = activityInfo.metaData != null
                     && activityInfo.metaData.getBoolean(DEFAULT_ICON_MARKER, false);
-            boolean isPiko = activityInfo.name.startsWith(PIKO_ALIAS_PREFIX);
+            String pikoLabel = activityInfo.metaData == null
+                    ? null
+                    : activityInfo.metaData.getString(ICON_LABEL_MARKER);
 
             icons.add(new Icon(
                     component,
-                    isDefault ? null : prettify(activityInfo.name),
+                    isDefault ? null : (pikoLabel != null ? pikoLabel : prettify(activityInfo.name)),
                     isDefault,
-                    isPiko,
+                    pikoLabel != null,
                     isSelected(pm, component, isDefault),
                     info
             ));

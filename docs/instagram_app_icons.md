@@ -25,23 +25,34 @@ The picker does not hold a hardcoded icon list. It queries `MAIN`/`LAUNCHER` wit
 declares. That keeps working when Instagram changes its own icon set between versions, and
 when the Clone patch installs the app under a different package name.
 
-Two conventions hold it together, both mirrored between `AppIcons.kt` and `AppIconManager`:
+Two meta-data keys hold it together, both mirrored between `AppIcons.kt` and
+`AppIconManager`:
 
-- Aliases piko adds are named `app.morphe.extension.instagram.appicon.<slug>`. That prefix
-  stays outside the `com.instagram.*` namespace so the Clone patch's rewriting cannot move
-  an alias out from under the runtime.
-- The patch tags Instagram's own launcher alias with an
-  `app.morphe.piko.default_app_icon` meta-data entry, which is how the picker labels the
-  stock icon and knows what the unset state resolves to.
+- `app.morphe.piko.default_app_icon` tags Instagram's own launcher alias, which is how the
+  picker labels the stock icon and knows what the unset state resolves to.
+- `app.morphe.piko.icon_label` tags an alias repointed at bundled artwork, and carries the
+  label to show for it.
 
-Each bundled alias is a *clone* of the stock alias with the name, icon and enabled state
-replaced. Cloning carries over the launch attributes, the shortcuts meta-data and the
-`instagram://` deeplink intent-filters, so selecting a bundled icon does not silently break
-deeplinks the way a hand-written `MAIN`/`LAUNCHER`-only alias would.
+**The patch adds no launcher components.** It repoints `android:icon` on aliases
+Instagram already declares — one of its aura aliases per bundled icon — and nothing else.
+
+That is a deliberate correction. The first version cloned the stock alias once per bundled
+icon and set `android:enabled="false"` on each clone. When that attribute failed to take
+effect the clones defaulted to *enabled*, and the launcher showed one entry per bundled
+icon: five icons for four bundled ones, on a fresh install, before the picker was ever
+opened. Reusing existing aliases makes that unreachable — the patched app declares exactly
+the launcher components stock Instagram does, so it cannot present more of them than stock
+Instagram would, whatever happens to any single attribute.
+
+The patch also asserts, after rewriting the manifest, that exactly one launcher component
+is left without `android:enabled="false"`, and fails the build otherwise. That invariant is
+silent at patch time and expensive to discover on a device.
 
 `android:label` is deliberately *not* set per icon. The launcher draws that text under the
-icon, so it has to stay the app's name. Display names in the picker come from the alias
-name instead: `throwback` reads as "Throwback", `retro_glow` as "Retro Glow".
+icon, so it has to stay the app's name. Because a repointed alias keeps Instagram's own
+name, the picker label comes from an `app.morphe.piko.icon_label` meta-data entry the patch
+writes alongside the icon; aliases piko has not touched still fall back to their name, so
+`throwback` reads as "Throwback".
 
 ## Adding an icon
 

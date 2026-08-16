@@ -7,14 +7,14 @@
 package app.crimera.patches.instagram.fork.appIcon
 
 /**
- * Alias name prefix for icons piko bundles.
+ * Meta-data key naming a repurposed alias in the picker.
  *
- * Kept outside the com.instagram.* namespace on purpose: the Clone patch rewrites
- * com.instagram.android wherever it appears in manifest attribute values, and an alias
- * whose name moves out from under the runtime's feet cannot be toggled any more.
- * Must stay in sync with AppIconManager.PIKO_ALIAS_PREFIX in the extension.
+ * The bundled icons reuse Instagram's own alternate-icon aliases, so an alias keeps
+ * Instagram's name ("...MainTabActivity.kpop") no matter which artwork it now carries,
+ * and the name cannot serve as the label. The patch writes the label here instead.
+ * Must stay in sync with AppIconManager.ICON_LABEL_MARKER in the extension.
  */
-internal const val PIKO_ALIAS_PREFIX = "app.morphe.extension.instagram.appicon."
+internal const val ICON_LABEL_MARKER = "app.morphe.piko.icon_label"
 
 /**
  * Meta-data key the patch attaches to Instagram's own launcher alias, so the picker can
