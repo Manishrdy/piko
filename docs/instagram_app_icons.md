@@ -95,10 +95,36 @@ docs/tools/.venv/bin/python docs/tools/generate_app_icons.py retro_glow logos/re
 Nothing else needs editing. The alias, the manifest entry and the picker row all follow
 from the slug.
 
+## Keeping exactly one launcher entry
+
+The feature rests on one invariant: exactly one `MAIN`/`LAUNCHER` component enabled at a
+time. Two enabled at once is what the launcher renders as **duplicate entries in the app
+drawer**, and it is reachable in more than one way — a `setComponentEnabledSetting` call
+that fails partway through the two-component flip, or a reinstall resetting overrides to
+the manifest defaults while the app still intends a different icon.
+
+So the flip is not trusted to have worked. `AppIconManager.reconcile()` runs on every app
+start, off the main thread, from `SettingsStatus.load()`:
+
+- the pick is written to `SharedPreferences` *before* the flip, so the intent survives a
+  half-completed switch, an update, and a process death;
+- one query lists the launcher entries that are not disabled, and if that is already
+  exactly the intended one it returns without touching the package manager;
+- otherwise it enables the intended alias and disables every other one.
+
+The intended alias is the stored pick if it still exists, else whichever alias carries the
+`app.morphe.piko.default_app_icon` marker. If neither resolves it does nothing — guessing
+wrong there would mean an app with no launcher entry at all. The intended alias is always
+enabled before the others are disabled, so there is never a window with none enabled.
+
+A duplicate can therefore outlive at most one app launch.
+
 ## Known behaviour
 
 - The icon can take a moment to change, and some launchers only redraw it after you leave
   and return to the home screen.
+- A clean uninstall wipes `SharedPreferences` too, so the icon returns to stock. Only an
+  update preserves the pick.
 - Shortcuts pinned to the previously active alias may be dropped by the launcher when that
   alias is disabled. This is inherent to alias-based icon switching, not specific to piko.
 - Leaving `bundledIcons` empty is valid. The picker then offers Instagram's own icon set,

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import app.morphe.extension.crimera.PikoUtils;
+import app.morphe.extension.crimera.sharedPreference.SharedPref;
 
 /**
  * Launcher icon switching, built on activity-aliases.
@@ -61,7 +62,85 @@ public final class AppIconManager {
      */
     private static final String INTERNAL_LAUNCHER_SUFFIX = ".InternalLauncher";
 
+    /** Remembers the picked alias so a reinstall or update can put it back. */
+    private static final String KEY_SELECTED_ICON = "piko_app_icon_selected";
+
     private AppIconManager() {
+    }
+
+    /**
+     * Forces the invariant this feature depends on: exactly one launcher entry enabled.
+     *
+     * Selecting an icon flips two components, and anything that interrupts that -- a
+     * failed binder call, a reinstall resetting overrides to the manifest defaults while
+     * a stale pick is still stored -- can leave two of them enabled, which the launcher
+     * shows as duplicate entries in the app drawer. Rather than trusting the flip to have
+     * completed, every app start reasserts the intended state, so a duplicate can only
+     * survive until the next launch.
+     *
+     * Cheap in the common case: one query returns the launcher entries that are *not*
+     * disabled, and if that is already exactly the intended one this returns without
+     * touching the package manager.
+     */
+    public static void reconcile() {
+        try {
+            Context context = PikoUtils.getContext();
+            PackageManager pm = context.getPackageManager();
+
+            List<Icon> all = listIcons();
+            if (all.isEmpty()) {
+                return;
+            }
+
+            ComponentName intended = intendedComponent(all);
+            if (intended == null) {
+                // Nothing stored and no alias carries the default marker. Leaving the
+                // manifest's own state alone beats guessing, since guessing wrong here
+                // means an app with no launcher entry at all.
+                return;
+            }
+
+            List<ResolveInfo> live = pm.queryIntentActivities(launcherIntent(context), 0);
+            if (live.size() == 1
+                    && intended.getClassName().equals(live.get(0).activityInfo.name)) {
+                return;
+            }
+
+            // Enable first: a window with nothing enabled would leave the app with no
+            // way back onto the launcher if the process died mid-reconcile.
+            setEnabled(pm, intended, true);
+            for (Icon icon : all) {
+                if (!icon.component.equals(intended)) {
+                    setEnabled(pm, icon.component, false);
+                }
+            }
+            PikoUtils.logger("App icon reconciled to " + intended.getClassName()
+                    + " (was showing " + live.size() + " launcher entries)");
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+        }
+    }
+
+    /** The alias that should be the live one: the stored pick, else the stock icon. */
+    private static ComponentName intendedComponent(List<Icon> icons) {
+        String saved = SharedPref.getStringPref(KEY_SELECTED_ICON, "");
+
+        if (saved != null && !saved.isEmpty()) {
+            for (Icon icon : icons) {
+                if (icon.component.getClassName().equals(saved)) {
+                    return icon.component;
+                }
+            }
+            // Stored pick is gone -- a bundled icon dropped from a later build, say.
+            // Fall through to the stock icon rather than stranding the app.
+        }
+
+        for (Icon icon : icons) {
+            if (icon.isDefault) {
+                return icon.component;
+            }
+        }
+        return null;
     }
 
     /** One selectable launcher icon. */
@@ -102,12 +181,8 @@ public final class AppIconManager {
         Context context = PikoUtils.getContext();
         PackageManager pm = context.getPackageManager();
 
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setPackage(context.getPackageName());
-
         List<ResolveInfo> resolved = pm.queryIntentActivities(
-                intent,
+                launcherIntent(context),
                 PackageManager.MATCH_DISABLED_COMPONENTS | PackageManager.GET_META_DATA
         );
 
@@ -164,16 +239,29 @@ public final class AppIconManager {
         Context context = PikoUtils.getContext();
         PackageManager pm = context.getPackageManager();
 
+        // Stored before the flip, so that even if disabling the outgoing alias fails the
+        // next app start knows which one was meant to win and can finish the job.
+        SharedPref.setStringPref(KEY_SELECTED_ICON, target.getClassName());
+
         setEnabled(pm, target, true);
 
+        boolean allDisabled = true;
         for (Icon icon : listIcons()) {
             if (!icon.component.equals(target)) {
-                setEnabled(pm, icon.component, false);
+                allDisabled &= setEnabled(pm, icon.component, false);
             }
+        }
+
+        if (!allDisabled) {
+            // Two launcher entries are live right now, which is what shows up as a
+            // duplicate in the app drawer. Say so instead of letting it look like it
+            // worked -- reconcile() will clear it on the next launch.
+            PikoUtils.logger("App icon: failed to disable a previous alias, "
+                    + "the duplicate clears on next app start");
         }
     }
 
-    private static void setEnabled(PackageManager pm, ComponentName component, boolean enabled) {
+    private static boolean setEnabled(PackageManager pm, ComponentName component, boolean enabled) {
         try {
             pm.setComponentEnabledSetting(
                     component,
@@ -182,9 +270,18 @@ public final class AppIconManager {
                             : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP
             );
+            return true;
         } catch (Exception e) {
             PikoUtils.logger(e);
+            return false;
         }
+    }
+
+    private static Intent launcherIntent(Context context) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setPackage(context.getPackageName());
+        return intent;
     }
 
     private static boolean isSelected(PackageManager pm, ComponentName component, boolean isDefault) {
