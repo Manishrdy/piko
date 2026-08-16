@@ -14,6 +14,7 @@ import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.util.registersUsed
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -35,18 +36,50 @@ val followerTrackerPatch =
             // the already-parsed result through unchanged -- this only reads
             // data the app already fetched for its own UI, it never triggers
             // an extra request.
-            FollowListParseFingerprint.apply {
-                val instructionList = method.instructions.toList()
-                val returnIndex = instructionList.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
-                check(returnIndex >= 0) { "Follow list parser has no RETURN_OBJECT" }
-                val returnRegister = (instructionList[returnIndex] as OneRegisterInstruction).registerA
+            //
+            // Two capture points, because the response handler class carries two
+            // entry points for the same data: the legacy JSON parser, and a
+            // Pando/GraphQL one taking an InputStream. On 439 only the Pando one
+            // actually runs -- the JSON parser is present, matches, and patches
+            // cleanly, but is never called, which is why hooking it alone
+            // captured nothing. Each is wrapped on its own so a build missing
+            // either still patches with the other.
+            runCatching {
+                FollowListParseFingerprint.apply {
+                    val instructionList = method.instructions.toList()
+                    val returnIndex = instructionList.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
+                    check(returnIndex >= 0) { "Follow list parser has no RETURN_OBJECT" }
+                    val returnRegister = (instructionList[returnIndex] as OneRegisterInstruction).registerA
 
-                method.addInstructions(
-                    returnIndex,
-                    """
-                    invoke-static {v$returnRegister}, $FOLLOWER_TRACKER_DESCRIPTOR->onListParsed(Ljava/lang/Object;)V
-                    """.trimIndent(),
-                )
+                    method.addInstructions(
+                        returnIndex,
+                        """
+                        invoke-static {v$returnRegister}, $FOLLOWER_TRACKER_DESCRIPTOR->onListParsed(Ljava/lang/Object;)V
+                        """.trimIndent(),
+                    )
+                }
+            }
+
+            // Matched by signature rather than by its obfuscated name (GC1 on
+            // 439): it is the only sibling taking an InputStream and handing
+            // back the parsed tree.
+            runCatching {
+                FollowListParseFingerprint.classDef.methods
+                    .first {
+                        it.parameterTypes.size == 2 &&
+                            it.parameterTypes[1].toString() == "Ljava/io/InputStream;" &&
+                            it.returnType == "Ljava/lang/Object;"
+                    }.apply {
+                        val returnInstruction = instructions.last { it.opcode == Opcode.RETURN_OBJECT }
+                        val treeRegister = returnInstruction.registersUsed[0]
+
+                        addInstructions(
+                            returnInstruction.location.index,
+                            """
+                            invoke-static {v$treeRegister}, $FOLLOWER_TRACKER_DESCRIPTOR->onListTreeParsed(Ljava/lang/Object;)V
+                            """.trimIndent(),
+                        )
+                    }
             }
 
             // Learn which "follow list" variant (followers, following, mutual,

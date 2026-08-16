@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -89,24 +90,47 @@ public class FollowerTrackerDiffEngine {
             FollowerTrackerDiagnostics.recordParsed(parsedResult, pageEntries.size(), enabled);
             if (!enabled) return;
 
-            String listType = currentListType;
-            if (listType == null) return;
-            if (pageEntries.isEmpty()) return;
-
-            LinkedHashMap<String, FollowerListEntry> visit =
-                    visitAccumulators.computeIfAbsent(listType, k -> new LinkedHashMap<>());
-            for (FollowerListEntry entry : pageEntries) {
-                if (!visit.containsKey(entry.userId)) {
-                    entry.depth = visit.size() + 1;
-                    visit.put(entry.userId, entry);
-                }
-            }
-
-            scheduleFinalize(listType);
+            accept(pageEntries);
         } catch (Exception e) {
             FollowerTrackerDiagnostics.recordError(e);
             PikoUtils.logger(e);
         }
+    }
+
+    // Called after each page arrives over the Pando/GraphQL path instead of as
+    // JSON. Same data, different container: a tree object whose rows are only
+    // reachable through accessors, not through fields.
+    public static void onListTreeParsed(Object parsedTree) {
+        boolean enabled = isEnabled();
+        try {
+            List<FollowerListEntry> pageEntries = enabled
+                    ? extractTreeEntries(parsedTree)
+                    : new ArrayList<>();
+            FollowerTrackerDiagnostics.recordParsed(parsedTree, pageEntries.size(), enabled);
+            if (!enabled) return;
+
+            accept(pageEntries);
+        } catch (Exception e) {
+            FollowerTrackerDiagnostics.recordError(e);
+            PikoUtils.logger(e);
+        }
+    }
+
+    private static void accept(List<FollowerListEntry> pageEntries) {
+        String listType = currentListType;
+        if (listType == null) return;
+        if (pageEntries.isEmpty()) return;
+
+        LinkedHashMap<String, FollowerListEntry> visit =
+                visitAccumulators.computeIfAbsent(listType, k -> new LinkedHashMap<>());
+        for (FollowerListEntry entry : pageEntries) {
+            if (!visit.containsKey(entry.userId)) {
+                entry.depth = visit.size() + 1;
+                visit.put(entry.userId, entry);
+            }
+        }
+
+        scheduleFinalize(listType);
     }
 
     private static void scheduleFinalize(String listType) {
@@ -199,6 +223,77 @@ public class FollowerTrackerDiffEngine {
             } catch (Exception ignored) {}
         }
         return entries;
+    }
+
+    // The tree's rows hang off no-argument accessors rather than fields, and the
+    // field-scanning approach used for the JSON model finds nothing on it: the
+    // backing list fields stay null until their accessor is called once. So call
+    // every list accessor and keep the first one whose rows read as users.
+    private static List<FollowerListEntry> extractTreeEntries(Object parsedTree) {
+        List<FollowerListEntry> entries = new ArrayList<>();
+        if (parsedTree == null) return entries;
+
+        for (Method method : parsedTree.getClass().getMethods()) {
+            if (method.getParameterCount() != 0) continue;
+            if (!List.class.isAssignableFrom(method.getReturnType())) continue;
+            try {
+                Object value = method.invoke(parsedTree);
+                if (!(value instanceof List)) continue;
+                List<?> rows = (List<?>) value;
+                if (rows.isEmpty()) continue;
+
+                for (Object row : rows) {
+                    FollowerListEntry entry = toEntry(row);
+                    if (entry == null) entry = toTreeEntry(row);
+                    if (entry != null) entries.add(entry);
+                }
+                if (!entries.isEmpty()) return entries;
+
+                // Rows that read as neither shape are worth describing: the
+                // accessor names are obfuscated and change between versions, so
+                // record the shape rather than guess again blind.
+                FollowerTrackerDiagnostics.recordUnreadableRow(rows.get(0));
+            } catch (Exception ignored) {
+            }
+        }
+        return entries;
+    }
+
+    // Usernames and ids are picked by shape, not by accessor name -- the names
+    // are obfuscated and version specific, the shapes are not. Instagram ids are
+    // long digit strings; usernames are lowercase, punctuated only by dot and
+    // underscore, and at most 30 characters.
+    private static FollowerListEntry toTreeEntry(Object row) {
+        try {
+            String username = null;
+            String userId = null;
+            for (Method method : row.getClass().getMethods()) {
+                if (method.getParameterCount() != 0) continue;
+                if (method.getReturnType() != String.class) continue;
+                if (method.getDeclaringClass() == Object.class) continue;
+                if ("toString".equals(method.getName())) continue;
+
+                Object value;
+                try {
+                    value = method.invoke(row);
+                } catch (Exception ignored) {
+                    continue;
+                }
+                if (!(value instanceof String)) continue;
+                String text = (String) value;
+
+                if (userId == null && text.matches("\\d{5,}")) {
+                    userId = text;
+                } else if (username == null && text.matches("[a-z0-9._]{1,30}")
+                        && !text.matches("\\d+")) {
+                    username = text;
+                }
+            }
+            if (username == null || userId == null) return null;
+            return new FollowerListEntry(userId, username);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static FollowerListEntry toEntry(Object row) {

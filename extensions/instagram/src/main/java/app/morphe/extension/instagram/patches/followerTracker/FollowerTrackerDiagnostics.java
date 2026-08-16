@@ -33,6 +33,7 @@ public final class FollowerTrackerDiagnostics {
     private static volatile int finalizedCount;
     private static volatile int lastSavedCount = -1;
     private static volatile String lastError = "";
+    private static volatile String lastRowShape = "";
 
     private FollowerTrackerDiagnostics() {
     }
@@ -60,6 +61,39 @@ public final class FollowerTrackerDiagnostics {
         persist();
     }
 
+    // Describes a row the extractor could not read, so the next attempt starts
+    // from the real accessor names instead of another guess. Values are
+    // truncated: enough to recognise a username or an id, not a data dump.
+    static void recordUnreadableRow(Object row) {
+        if (row == null || !lastRowShape.isEmpty()) return;
+        try {
+            StringBuilder shape = new StringBuilder(row.getClass().getName());
+            int described = 0;
+            for (java.lang.reflect.Method method : row.getClass().getMethods()) {
+                if (described >= 12) break;
+                if (method.getParameterCount() != 0) continue;
+                if (method.getReturnType() != String.class) continue;
+                if (method.getDeclaringClass() == Object.class) continue;
+                if ("toString".equals(method.getName())) continue;
+                Object value;
+                try {
+                    value = method.invoke(row);
+                } catch (Exception ignored) {
+                    continue;
+                }
+                if (value == null) continue;
+                String text = String.valueOf(value);
+                if (text.length() > 24) text = text.substring(0, 24) + "...";
+                shape.append("\n  ").append(method.getName()).append("=").append(text);
+                described++;
+            }
+            lastRowShape = shape.toString();
+            persist();
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+        }
+    }
+
     static void recordError(Throwable error) {
         if (error == null) return;
         String message = error.getClass().getSimpleName();
@@ -83,6 +117,7 @@ public final class FollowerTrackerDiagnostics {
                         + "x, last size: " + value(stored, "lastSavedCount", lastSavedCount),
                 "enabled at last hook: " + value(stored, "enabled", lastEnabled),
                 "last error: " + emptyAsNone(String.valueOf(value(stored, "lastError", lastError))),
+                "unread row: " + emptyAsNone(String.valueOf(value(stored, "lastRowShape", lastRowShape))),
         };
     }
 
@@ -115,6 +150,7 @@ public final class FollowerTrackerDiagnostics {
             snapshot.put("lastSavedCount", lastSavedCount);
             snapshot.put("enabled", lastEnabled);
             snapshot.put("lastError", lastError);
+            snapshot.put("lastRowShape", lastRowShape);
             FollowerTrackerSharedPref.saveDiagnostics(snapshot.toString());
         } catch (Exception e) {
             PikoUtils.logger(e);
