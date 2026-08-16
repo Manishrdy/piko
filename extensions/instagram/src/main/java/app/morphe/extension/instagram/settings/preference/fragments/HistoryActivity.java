@@ -9,19 +9,20 @@ package app.morphe.extension.instagram.settings.preference.fragments;
 
 import static app.morphe.extension.instagram.utils.IgStr.str;
 
+import android.app.Activity;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,7 +43,13 @@ import app.morphe.extension.instagram.settings.preference.widgets.InstagramPrefe
 // outside that prefix caused a real crash (NPE unboxing a null Boolean)
 // once the underlying activity got marked stale and recreated -- matching
 // BackupPrefActivity/RestorePrefActivity's location avoids it.
-public class HistoryActivity extends AppCompatActivity {
+//
+// Extends the platform Activity rather than AppCompatActivity because the
+// manifest gives this screen its own Theme.DeviceDefault.NoActionBar, the
+// same theme SettingsActivity uses -- AppCompat refuses to start under a
+// non-AppCompat theme. Both are needed together: building views against
+// Instagram's inherited application theme is what crashed this screen.
+public class HistoryActivity extends Activity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,16 +59,51 @@ public class HistoryActivity extends AppCompatActivity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(InstagramPreferenceStyle.backgroundColor());
 
+        applySystemBarStyle();
+
+        View eventList = buildEventList();
+
         root.addView(buildToolbar(), new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 InstagramPreferenceStyle.dp(this, 70)
         ));
-        root.addView(buildEventList(), new LinearLayout.LayoutParams(
+        root.addView(eventList, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         ));
 
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                v.setPadding(0, insets.getSystemWindowInsetTop(), 0, 0);
+
+                eventList.setPadding(
+                eventList.getPaddingLeft(),
+                eventList.getPaddingTop(),
+                eventList.getPaddingRight(),
+                insets.getSystemWindowInsetBottom()
+                );
+
+                return insets;
+            }
+        });
+
         setContentView(root);
+    }
+
+    private void applySystemBarStyle() {
+        getWindow().setStatusBarColor(InstagramPreferenceStyle.backgroundColor());
+        getWindow().setNavigationBarColor(InstagramPreferenceStyle.backgroundColor());
+
+        int flags = getWindow().getDecorView().getSystemUiVisibility();
+        if (UI.isDarkMode()) {
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        } else {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(flags);
     }
 
     private LinearLayout buildToolbar() {

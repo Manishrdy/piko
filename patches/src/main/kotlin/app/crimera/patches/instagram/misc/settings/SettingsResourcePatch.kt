@@ -34,17 +34,32 @@ val addSettingsActivityPatch =
                 service.setAttribute("android:stopWithTask", "false")
                 application.appendChild(service)
 
+                // These build no views of their own, so Instagram's application theme
+                // (inherited when no android:theme is set) is good enough for them.
                 listOf(
                     "app.morphe.extension.instagram.settings.preference.fragments.BackupPrefActivity",
                     "app.morphe.extension.instagram.settings.preference.fragments.RestorePrefActivity",
                     "app.morphe.extension.crimera.downloader.FolderPickerActivity",
-                    "app.morphe.extension.instagram.settings.preference.fragments.HistoryActivity",
                 ).forEach { activityName ->
                     activity = document.createElement("activity")
                     activity.setAttribute("android:name", activityName)
                     activity.setAttribute("android:exported", "false")
                     application.appendChild(activity)
                 }
+
+                // HistoryActivity builds its own views, so it needs the same explicit
+                // platform theme SettingsActivity uses. Inheriting Theme.Instagram.Splash
+                // instead crashed constructing a plain TextView: that theme's default text
+                // appearance points at an Instagram attribute which does not always resolve,
+                // and an unresolved attribute makes TypedArray.getColorStateList throw.
+                activity = document.createElement("activity")
+                activity.setAttribute(
+                    "android:name",
+                    "app.morphe.extension.instagram.settings.preference.fragments.HistoryActivity",
+                )
+                activity.setAttribute("android:theme", "@android:style/Theme.DeviceDefault.NoActionBar")
+                activity.setAttribute("android:exported", "false")
+                application.appendChild(activity)
             }
         }
     }
