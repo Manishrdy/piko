@@ -47,19 +47,21 @@ val addSettingsActivityPatch =
                     application.appendChild(activity)
                 }
 
-                // HistoryActivity builds its own views, so it needs the same explicit
-                // platform theme SettingsActivity uses. Inheriting Theme.Instagram.Splash
-                // instead crashed constructing a plain TextView: that theme's default text
-                // appearance points at an Instagram attribute which does not always resolve,
-                // and an unresolved attribute makes TypedArray.getColorStateList throw.
-                activity = document.createElement("activity")
-                activity.setAttribute(
-                    "android:name",
+                // These build their own views, so they need the same explicit platform theme
+                // SettingsActivity uses. Inheriting Theme.Instagram.Splash instead crashed
+                // constructing a plain TextView: that theme's default text appearance points
+                // at an Instagram attribute which does not always resolve, and an unresolved
+                // attribute makes TypedArray.getColorStateList throw.
+                listOf(
                     "app.morphe.extension.instagram.settings.preference.fragments.HistoryActivity",
-                )
-                activity.setAttribute("android:theme", "@android:style/Theme.DeviceDefault.NoActionBar")
-                activity.setAttribute("android:exported", "false")
-                application.appendChild(activity)
+                    "app.morphe.extension.instagram.settings.preference.fragments.IconPickerActivity",
+                ).forEach { activityName ->
+                    activity = document.createElement("activity")
+                    activity.setAttribute("android:name", activityName)
+                    activity.setAttribute("android:theme", "@android:style/Theme.DeviceDefault.NoActionBar")
+                    activity.setAttribute("android:exported", "false")
+                    application.appendChild(activity)
+                }
             }
         }
     }

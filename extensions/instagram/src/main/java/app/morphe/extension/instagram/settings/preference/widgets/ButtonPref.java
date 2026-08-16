@@ -63,7 +63,8 @@ public class ButtonPref extends Preference {
 
                     if (key.equals("piko_export_dev_overrides") || key.equals("piko_import_dev_overrides") || key.equals("piko_import_id_mapping")
                             || key.equals("piko_export_pref") || key.equals("piko_import_pref")
-                            || key.equals("piko_download_set_path") || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)) {
+                            || key.equals("piko_download_set_path") || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)
+                            || key.equals(Constants.PIKO_APP_ICON_PICKER)) {
                         ActivityHook.launchFragment((Activity) context, key);
                         
                     } else if (key.equals("piko_reset_pref")) {
@@ -147,11 +148,14 @@ public class ButtonPref extends Preference {
                 || key.equals("piko_export_experiment_mappings")
                 || key.equals("piko_download_id_mapping")
                 || key.equals("piko_rec_flags_refresh_file")
-                || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)));
+                || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)
+                || key.equals(Constants.PIKO_APP_ICON_PICKER)));
     }
 
     private static boolean hasPressedHighlight(String key) {
-        return isFragmentNavigation(key)
+        // The app icon picker sits alongside the fragment rows on the settings root,
+        // so it gets the same press feedback even though it opens an activity directly.
+        return (isFragmentNavigation(key) || Constants.PIKO_APP_ICON_PICKER.equals(key))
                 && !Constants.PIKO_FRAGMENT_REC_FLAGS.equals(key);
     }
 
@@ -197,6 +201,9 @@ public class ButtonPref extends Preference {
         }
         if(key.equals(Constants.PIKO_FRAGMENT_FOLLOWER_TRACKER)){
             return UI.DRAWABLE_USERS_ICON;
+        }
+        if(key.equals(Constants.PIKO_APP_ICON_PICKER)){
+            return UI.DRAWABLE_APP_ICON;
         }
         return null;
     }

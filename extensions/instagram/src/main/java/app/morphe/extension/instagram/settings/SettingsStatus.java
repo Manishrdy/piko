@@ -223,6 +223,11 @@ public class SettingsStatus {
     public static void followerTracker() { followerTracker = true; }
     public static boolean followerTrackerSection(){return followerTracker; }
 
+    // App icon section.
+    public static boolean appIcon = false;
+    public static void appIcon() { appIcon = true; }
+    public static boolean appIconSection(){return appIcon; }
+
 
         public static void loadStatusMap(){
         FLAGS.put(str("piko_disable_ads"),SettingsStatus.disableAds);

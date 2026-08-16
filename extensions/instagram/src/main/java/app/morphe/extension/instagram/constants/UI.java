@@ -54,6 +54,7 @@ public class UI {
     public static final String DRAWABLE_SHARE_TO_DIRECT = "gallery_share_to_direct_button";
     public static final String DRAWABLE_SHARE_TO_REEL = "gallery_share_to_reels_button";
     public static final String DRAWABLE_USERS_ICON = "instagram_users_pano_outline_24";
+    public static final String DRAWABLE_APP_ICON = "instagram_app_instagram_outline_24";
     public static final String DRAWABLE_ARROW_BACK =
             "instagram_arrow_left_pano_outline_24";
     public static final String DRAWABLE_CHEVRON_RIGHT =

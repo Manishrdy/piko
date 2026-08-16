@@ -989,6 +989,16 @@ public class ScreenBuilder {
             );
         }
 
+        if (SettingsStatus.appIconSection()){
+            addPreference(
+                    helper.buttonPreference(
+                            str("piko_app_icon_title"),
+                            "",
+                            Constants.PIKO_APP_ICON_PICKER
+                    )
+            );
+        }
+
         if (SettingsStatus.ghostSection()){
             addPreference(
                     helper.buttonPreference(
