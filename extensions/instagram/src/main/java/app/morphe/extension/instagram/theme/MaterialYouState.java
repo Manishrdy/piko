@@ -113,9 +113,15 @@ final class MaterialYouState {
             boolean pikoSettingsActivity,
             boolean activityDark
     ) {
-        return pikoSettingsActivity
-                ? observedInstagramDark
-                : activityDark;
+        // Piko activities normally just pass through whatever was last observed
+        // from a real Instagram screen, but if none has run yet in this process
+        // (e.g. a piko activity is the first thing recreated after Android
+        // kills the app in the background) there's nothing to pass through --
+        // fall back to this activity's own reading instead of null.
+        if (pikoSettingsActivity && observedInstagramDark != null) {
+            return observedInstagramDark;
+        }
+        return activityDark;
     }
 
     static Boolean updateObservedInstagramDarkForNativeMode(
