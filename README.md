@@ -72,7 +72,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 ## ⚙️ Patch Details
 
 <!-- PATCHES_START -->
-> **[v3.9.0-dev.7-fork.11](https://github.com/Manishrdy/piko/releases/tag/v3.9.0-dev.7-fork.11)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;133 patches total
+> **[v3.9.0-dev.7-fork.12](https://github.com/Manishrdy/piko/releases/tag/v3.9.0-dev.7-fork.12)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;135 patches total
 <details>
 <summary>📦 Twitter&nbsp;&nbsp;•&nbsp;&nbsp;73 patches</summary>
 <br>
@@ -161,7 +161,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 </details>
 
 <details>
-<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;60 patches</summary>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;62 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -178,6 +178,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 | [Change version code](#change-version-code) | Changes the version code of the app. This will turn off app store updates and allows downgrading an existing app install to an older app version. | • Version code |
 | [Clone](#clone) | Changes the package name and the app name. This allows you to install the patched app alongside the original Instagram app.<br>Caution: Do not select the official Morphe's "Change package name" universal patch. | • Package name<br>• App name |
 | [Copy comment](#copy-comment) | Adds a button to copy comments on posts and reels. |  |
+| [Custom sharing domain](#custom-sharing-domain) | Allows for using custom domains when sharing posts, reels and stories. |  |
 | [Customise story ring size](#customise-story-ring-size) |  |  |
 | [Customise story timestamp](#customise-story-timestamp) | Customise the timestamp that shows when the story was posted |  |
 | [Disable Reels scrolling](#disable-reels-scrolling) | Disables the endless scrolling behavior in Instagram Reels, preventing swiping to the next Reel. Note: On a clean install, the 'Tip' animation may appear but will stop on its own after a few seconds. |  |
@@ -220,6 +221,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 | [Remove empty bottom space](#remove-empty-bottom-space) | Removes empty space below bottom navigation bar |  |
 | [Restore classic search recents](#restore-classic-search-recents) | Restores the old search empty-state (up to 25 recent profiles) instead of Meta AI suggestions and the collapsed recents list. |  |
 | [Sanitize share links](#sanitize-share-links) |  |  |
+| [Save deleted messages](#save-deleted-messages) | Captures incoming DMs locally as they arrive from the server and marks them when the sender deletes them. |  |
 | [Save media comment](#save-media-comment) | Adds a button to save media comments on posts and reels. |  |
 | [Stories audio autoplay](#stories-audio-autoplay) |  |  |
 | [Theme](#theme) | Adds Material You and AMOLED controls to Piko settings on Android 12 and later. On Android 8–11, it applies a fixed Material You-style theme or an optional AMOLED theme. | • Pure-black AMOLED theme for Android 8–11 |
