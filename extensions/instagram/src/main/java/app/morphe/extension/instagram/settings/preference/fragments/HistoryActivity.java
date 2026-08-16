@@ -28,10 +28,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import app.morphe.extension.crimera.PikoUtils;
 import app.morphe.extension.instagram.constants.UI;
+import app.morphe.extension.instagram.patches.followerTracker.FollowerListEntry;
 import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerDiffEngine;
 import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerSharedPref;
 import app.morphe.extension.instagram.settings.preference.widgets.InstagramPreferenceStyle;
@@ -147,6 +151,12 @@ public class HistoryActivity extends Activity {
         int rowPadding = InstagramPreferenceStyle.dp(this, 15);
         list.setPadding(rowPadding, InstagramPreferenceStyle.dp(this, 10), rowPadding, InstagramPreferenceStyle.dp(this, 10));
 
+        DateFormat capturedDateFormat = android.text.format.DateFormat.getDateFormat(this);
+        DateFormat capturedTimeFormat = android.text.format.DateFormat.getTimeFormat(this);
+        buildCapturedSection(list, capturedDateFormat, capturedTimeFormat);
+
+        list.addView(buildSectionHeader(str("piko_follower_tracker_section_activity")));
+
         JSONArray events = FollowerTrackerSharedPref.getEventLogRaw();
         if (events.length() == 0) {
             TextView empty = new TextView(this);
@@ -173,6 +183,100 @@ public class HistoryActivity extends Activity {
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
         return scrollView;
+    }
+
+    // What actually got recorded, as opposed to what changed. Exists mainly to
+    // answer "is capture working at all", so it reports the raw list type keys
+    // Instagram handed us rather than mapping them onto the followers/following
+    // constants -- if a key here reads as anything else, that mapping is wrong.
+    private void buildCapturedSection(LinearLayout list, DateFormat dateFormat, DateFormat timeFormat) {
+        list.addView(buildSectionHeader(str("piko_follower_tracker_section_captured")));
+
+        List<String> listTypes = FollowerTrackerSharedPref.getTrackedListTypes();
+        if (listTypes.isEmpty()) {
+            TextView none = new TextView(this);
+            none.setText(str("piko_follower_tracker_captured_none"));
+            none.setTextColor(InstagramPreferenceStyle.primaryTextColor());
+            none.setPadding(0, InstagramPreferenceStyle.dp(this, 10), 0, InstagramPreferenceStyle.dp(this, 10));
+            list.addView(none);
+            return;
+        }
+
+        for (String listType : listTypes) {
+            list.addView(buildCapturedRow(listType, dateFormat, timeFormat));
+        }
+
+        TextView hint = new TextView(this);
+        hint.setText(str("piko_follower_tracker_captured_hint"));
+        hint.setTextColor(InstagramPreferenceStyle.secondaryTextColor());
+        hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        hint.setPadding(0, InstagramPreferenceStyle.dp(this, 4), 0, InstagramPreferenceStyle.dp(this, 10));
+        list.addView(hint);
+    }
+
+    private View buildCapturedRow(String listType, DateFormat dateFormat, DateFormat timeFormat) {
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(0, InstagramPreferenceStyle.dp(this, 10), 0, InstagramPreferenceStyle.dp(this, 10));
+
+        Map<String, FollowerListEntry> baseline = FollowerTrackerSharedPref.getBaseline(listType);
+        long capturedAt = FollowerTrackerSharedPref.getCapturedAt(listType);
+
+        TextView title = new TextView(this);
+        title.setText(listType);
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        title.setTextColor(InstagramPreferenceStyle.primaryTextColor());
+
+        TextView summary = new TextView(this);
+        if (capturedAt > 0) {
+            Date capturedDate = new Date(capturedAt);
+            summary.setText(str(
+                    "piko_follower_tracker_captured_summary",
+                    baseline.size(),
+                    dateFormat.format(capturedDate),
+                    timeFormat.format(capturedDate)
+            ));
+        } else {
+            summary.setText(str("piko_follower_tracker_captured_summary_no_time", baseline.size()));
+        }
+        summary.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        summary.setTextColor(InstagramPreferenceStyle.secondaryTextColor());
+
+        // One view holding every name, not one view per name -- a full list can
+        // run to thousands of entries, and that many child views would make the
+        // screen crawl for no benefit.
+        TextView names = new TextView(this);
+        names.setText(String.join("\n", usernamesOf(baseline)));
+        names.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        names.setTextColor(InstagramPreferenceStyle.secondaryTextColor());
+        names.setPadding(0, InstagramPreferenceStyle.dp(this, 8), 0, 0);
+        names.setVisibility(View.GONE);
+
+        container.addView(title);
+        container.addView(summary);
+        container.addView(names);
+        container.setOnClickListener(v -> names.setVisibility(
+                names.getVisibility() == View.GONE ? View.VISIBLE : View.GONE
+        ));
+        return container;
+    }
+
+    private static List<String> usernamesOf(Map<String, FollowerListEntry> baseline) {
+        List<String> usernames = new ArrayList<>(baseline.size());
+        for (FollowerListEntry entry : baseline.values()) {
+            usernames.add(entry.username);
+        }
+        return usernames;
+    }
+
+    private TextView buildSectionHeader(String text) {
+        TextView header = new TextView(this);
+        header.setText(text);
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        header.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        header.setTextColor(InstagramPreferenceStyle.secondaryTextColor());
+        header.setPadding(0, InstagramPreferenceStyle.dp(this, 14), 0, InstagramPreferenceStyle.dp(this, 4));
+        return header;
     }
 
     private TextView buildRow(JSONObject event, DateFormat dateFormat, DateFormat timeFormat) throws Exception {

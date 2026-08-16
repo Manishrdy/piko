@@ -10,6 +10,8 @@ package app.morphe.extension.instagram.patches.followerTracker;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +32,47 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
         super(Constants.PIKO + "_follower_tracker");
     }
 
+    private static final String BASELINE_PREFIX = "baseline_";
+    private static final String CAPTURED_AT_PREFIX = "captured_at_";
+
     private static String baselineKey(String listType) {
-        return "baseline_" + listType;
+        return BASELINE_PREFIX + listType;
+    }
+
+    private static String capturedAtKey(String listType) {
+        return CAPTURED_AT_PREFIX + listType;
+    }
+
+    // Every list type with a stored baseline, as the raw string Instagram
+    // handed us. Deliberately not mapped onto TYPE_FOLLOWERS/TYPE_FOLLOWING --
+    // those constants have never been confirmed against a real run, so the
+    // history screen shows whatever actually arrived.
+    public static List<String> getTrackedListTypes() {
+        List<String> listTypes = new ArrayList<>();
+        try {
+            if (INSTANCE.sp == null) return listTypes;
+            for (String key : INSTANCE.sp.preferences.getAll().keySet()) {
+                if (key.startsWith(BASELINE_PREFIX)) {
+                    listTypes.add(key.substring(BASELINE_PREFIX.length()));
+                }
+            }
+            Collections.sort(listTypes);
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+        }
+        return listTypes;
+    }
+
+    /** @return when this list was last captured, or 0 if that was never recorded. */
+    public static long getCapturedAt(String listType) {
+        try {
+            String raw = INSTANCE.getString(capturedAtKey(listType), "");
+            if (raw.isEmpty()) return 0L;
+            return Long.parseLong(raw);
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+            return 0L;
+        }
     }
 
     // Distinguishes "never captured this list before" from "captured it and it
@@ -69,6 +110,10 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
                 arr.put(o);
             }
             INSTANCE.setString(baselineKey(listType), arr.toString());
+            // Stamped here rather than at the call sites so every path that
+            // rewrites a baseline -- silent first capture and later merges
+            // alike -- records when it happened.
+            INSTANCE.setString(capturedAtKey(listType), Long.toString(System.currentTimeMillis()));
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
