@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app.morphe.extension.crimera.PikoUtils;
@@ -29,10 +30,18 @@ public class FollowerTrackerDiffEngine {
 
     // A "visit" is considered finished once no new page has arrived for this
     // long -- notifies/persists once per visit instead of once per page.
-    private static final long VISIT_SETTLE_DELAY_MS = 2500;
+    // Generous on purpose: this timer cannot tell "backed out of the screen"
+    // apart from "paused to read something", and firing early splits one long
+    // scroll into several visits, each reporting the next chunk as new follows.
+    private static final long VISIT_SETTLE_DELAY_MS = 15000;
 
     private static final Map<String, LinkedHashMap<String, FollowerListEntry>> visitAccumulators = new ConcurrentHashMap<>();
     private static final Map<String, Runnable> pendingFinalize = new ConcurrentHashMap<>();
+    // List types whose current visit is the first ever capture. Held for the
+    // whole visit rather than re-checked per finalize, so that a long first
+    // scroll which settles part way through keeps seeding quietly instead of
+    // reporting everything below that point as new follows.
+    private static final Set<String> seedingVisits = ConcurrentHashMap.newKeySet();
     private static final Handler handler = new Handler(Looper.getMainLooper());
 
     private static volatile String currentListType = null;
@@ -43,11 +52,19 @@ public class FollowerTrackerDiffEngine {
     public static void onListScreenOpened(String listType) {
         if (!isEnabled()) return;
         try {
-            if (currentListType != null && !currentListType.equals(listType)) {
+            // Settle the previous visit before starting a new one, whichever
+            // list it was for -- reopening the same list would otherwise wipe
+            // an accumulator that still had a finalize pending against it.
+            if (currentListType != null) {
                 finalizeVisit(currentListType);
             }
             currentListType = listType;
             visitAccumulators.put(listType, new LinkedHashMap<>());
+            if (FollowerTrackerSharedPref.hasBaseline(listType)) {
+                seedingVisits.remove(listType);
+            } else {
+                seedingVisits.add(listType);
+            }
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
@@ -94,6 +111,13 @@ public class FollowerTrackerDiffEngine {
             LinkedHashMap<String, FollowerListEntry> visit = visitAccumulators.get(listType);
             if (visit == null || visit.isEmpty()) return;
 
+            // Nothing to compare against yet: capture the list quietly rather
+            // than announcing every existing follower as a brand new one.
+            if (seedingVisits.contains(listType) || !FollowerTrackerSharedPref.hasBaseline(listType)) {
+                FollowerTrackerSharedPref.saveBaseline(listType, visit);
+                return;
+            }
+
             Map<String, FollowerListEntry> baseline = FollowerTrackerSharedPref.getBaseline(listType);
 
             List<String> newUsernames = new ArrayList<>();
@@ -117,13 +141,7 @@ public class FollowerTrackerDiffEngine {
 
             if (newUsernames.isEmpty() && goneUsernames.isEmpty()) return;
 
-            for (String username : newUsernames) {
-                FollowerTrackerSharedPref.appendEvent("FOLLOW", listType, username);
-            }
-            for (String username : goneUsernames) {
-                FollowerTrackerSharedPref.appendEvent("UNFOLLOW", listType, username);
-            }
-
+            FollowerTrackerSharedPref.appendEvents(listType, newUsernames, goneUsernames);
             FollowerTrackerNotifier.notifyChanges(listType, newUsernames, goneUsernames);
         } catch (Exception e) {
             PikoUtils.logger(e);

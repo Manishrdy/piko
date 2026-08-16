@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import app.morphe.extension.crimera.PikoUtils;
@@ -31,6 +32,13 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
 
     private static String baselineKey(String listType) {
         return "baseline_" + listType;
+    }
+
+    // Distinguishes "never captured this list before" from "captured it and it
+    // was empty" -- the first visit seeds the baseline silently instead of
+    // reporting every existing follower as brand new.
+    public static boolean hasBaseline(String listType) {
+        return !INSTANCE.getString(baselineKey(listType), "").isEmpty();
     }
 
     public static Map<String, FollowerListEntry> getBaseline(String listType) {
@@ -66,15 +74,20 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
         }
     }
 
-    public static void appendEvent(String type, String listType, String username) {
+    // Writes a whole visit's worth of events in one read/serialize/store cycle.
+    // Doing this per username instead re-parsed and rewrote the entire log once
+    // for every name, which is a lot of main thread work on a long list.
+    public static void appendEvents(String listType, List<String> newUsernames, List<String> goneUsernames) {
         try {
             JSONArray events = getEventLogRaw();
-            JSONObject event = new JSONObject();
-            event.put("type", type);
-            event.put("listType", listType);
-            event.put("username", username);
-            event.put("timestamp", System.currentTimeMillis());
-            events.put(event);
+            long timestamp = System.currentTimeMillis();
+
+            for (String username : newUsernames) {
+                events.put(buildEvent("FOLLOW", listType, username, timestamp));
+            }
+            for (String username : goneUsernames) {
+                events.put(buildEvent("UNFOLLOW", listType, username, timestamp));
+            }
 
             if (events.length() > MAX_EVENTS) {
                 JSONArray trimmed = new JSONArray();
@@ -89,6 +102,15 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
+    }
+
+    private static JSONObject buildEvent(String type, String listType, String username, long timestamp) throws Exception {
+        JSONObject event = new JSONObject();
+        event.put("type", type);
+        event.put("listType", listType);
+        event.put("username", username);
+        event.put("timestamp", timestamp);
+        return event;
     }
 
     public static JSONArray getEventLogRaw() {
