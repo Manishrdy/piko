@@ -12,11 +12,8 @@ import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.FOLLOWER_TRACKER_DESCRIPTOR
 import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.util.smali.ExternalLabel
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -65,7 +62,7 @@ val followerTrackerPatch =
                 check(putIndex >= 0) { "FollowListData field write not found" }
                 val dataRegister = (instructionList[putIndex] as TwoRegisterInstruction).registerA
 
-                method.addInstructionsWithLabels(
+                method.addInstructions(
                     putIndex + 1,
                     """
                     iget-object v$dataRegister, v$dataRegister, $FOLLOW_LIST_DATA_CLASS->A00:LX/0EfV;
@@ -75,7 +72,6 @@ val followerTrackerPatch =
                     :piko_skip
                     nop
                     """.trimIndent(),
-                    ExternalLabel("piko_skip", method.getInstruction(putIndex + 1)),
                 )
             }
 
