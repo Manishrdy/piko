@@ -5,7 +5,7 @@
  */
 
 
-package app.morphe.extension.instagram.patches.followerTracker;
+package app.morphe.extension.instagram.settings.preference.fragments;
 
 import static app.morphe.extension.instagram.utils.IgStr.str;
 
@@ -31,8 +31,17 @@ import java.util.Date;
 
 import app.morphe.extension.crimera.PikoUtils;
 import app.morphe.extension.instagram.constants.UI;
+import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerDiffEngine;
+import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerSharedPref;
 import app.morphe.extension.instagram.settings.preference.widgets.InstagramPreferenceStyle;
 
+// Lives under settings.preference.fragments (not patches.followerTracker) --
+// MaterialYouTheme classifies "piko settings activities" by package prefix,
+// and only that classification skips overwriting the app-wide observed dark
+// theme state with this activity's own reading. Placing this activity
+// outside that prefix caused a real crash (NPE unboxing a null Boolean)
+// once the underlying activity got marked stale and recreated -- matching
+// BackupPrefActivity/RestorePrefActivity's location avoids it.
 public class HistoryActivity extends AppCompatActivity {
 
     @Override
