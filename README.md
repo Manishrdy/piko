@@ -72,7 +72,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 ## ⚙️ Patch Details
 
 <!-- PATCHES_START -->
-> **[v3.9.0-dev.7-fork.12](https://github.com/Manishrdy/piko/releases/tag/v3.9.0-dev.7-fork.12)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;135 patches total
+> **[v3.9.0-dev.8](https://github.com/crimera/piko/releases/tag/v3.9.0-dev.8)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;132 patches total
 <details>
 <summary>📦 Twitter&nbsp;&nbsp;•&nbsp;&nbsp;73 patches</summary>
 <br>
@@ -161,7 +161,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 </details>
 
 <details>
-<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;62 patches</summary>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;59 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -209,7 +209,6 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 | [Hide suggested content](#hide-suggested-content) | Hides suggested stories, reels, threads (Suggested posts will still be shown). |  |
 | [Improve image viewing](#improve-image-viewing) | Fetches max resolution images from server. |  |
 | [Limit feed to following profiles](#limit-feed-to-following-profiles) | Filters the home feed to display only content from profiles you follow. |  |
-| [Local follower/unfollower tracker](#local-follower-unfollower-tracker) | Detects who followed/unfollowed you by comparing what you see each time you open your Followers/Following list. Never polls or makes extra requests. |  |
 | [Loop story](#loop-story) | Replay the current story when it ends |  |
 | [Make ephemeral media permanent](#make-ephemeral-media-permanent) | Changes unexpired view once, view twice media to permanent view. |  |
 | [Mark chat as read manually](#mark-chat-as-read-manually) | Adds option to mark a thread aka message as read manually |  |
