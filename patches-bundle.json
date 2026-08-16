@@ -1,6 +1,6 @@
 {
   "created_at": "2026-08-10T18:23:13",
   "description": "## [3.9.0-dev.7](https://github.com/crimera/piko/compare/v3.9.0-dev.6...v3.9.0-dev.7) (2026-08-10)\n\n### 🔧 Improvements\n\n* **Instagram:** Turn off `Disable analytics` by default ([#1674](https://github.com/crimera/piko/issues/1674)) ([753a70b](https://github.com/crimera/piko/commit/753a70be81449c27f0a8e056f7f0e938a11e964e))",
-  "download_url": "https://github.com/Manishrdy/piko/releases/download/v3.9.0-dev.7-fork.7/patches-3.9.0-dev.7-fork.7.mpp",
-  "version": "3.9.0-dev.7-fork.7"
+  "download_url": "https://github.com/Manishrdy/piko/releases/download/v3.9.0-dev.7-fork.8/patches-3.9.0-dev.7-fork.8.mpp",
+  "version": "3.9.0-dev.7-fork.8"
 }
