@@ -66,6 +66,13 @@ public class UI {
         TypedValue typedValue = new TypedValue();
         int attrId = ResourceUtils.getAttrIdentifier(attrName);
         boolean resolved = context.getTheme().resolveAttribute(attrId, typedValue, true);
+        // resolveAttribute can fail to find the attribute in the current theme
+        // (e.g. a piko activity created before Instagram's own theme has ever
+        // been fully applied in this process) -- fall back instead of passing
+        // a resourceId of 0 to getColor(), which throws NotFoundException.
+        if (!resolved || typedValue.resourceId == 0) {
+            return Color.BLACK;
+        }
         return context.getColor(typedValue.resourceId);
     }
 
