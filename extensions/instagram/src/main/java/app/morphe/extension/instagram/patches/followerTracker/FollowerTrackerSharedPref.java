@@ -27,6 +27,7 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
     // are dropped once the log passes this size.
     private static final int MAX_EVENTS = 500;
     private static final String EVENT_LOG_KEY = "event_log";
+    private static final String DIAGNOSTICS_KEY = "diagnostics";
 
     public FollowerTrackerSharedPref() {
         super(Constants.PIKO + "_follower_tracker");
@@ -156,6 +157,23 @@ public class FollowerTrackerSharedPref extends BaseSharedPref {
         event.put("username", username);
         event.put("timestamp", timestamp);
         return event;
+    }
+
+    public static void saveDiagnostics(String snapshot) {
+        try {
+            INSTANCE.setString(DIAGNOSTICS_KEY, snapshot);
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+        }
+    }
+
+    public static String getDiagnostics() {
+        try {
+            return INSTANCE.getString(DIAGNOSTICS_KEY, "");
+        } catch (Exception e) {
+            PikoUtils.logger(e);
+            return "";
+        }
     }
 
     public static JSONArray getEventLogRaw() {

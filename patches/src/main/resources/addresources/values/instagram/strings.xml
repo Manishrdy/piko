@@ -385,6 +385,8 @@
     <string name="piko_follower_tracker_captured_summary">%d recorded -- last captured %s %s</string>
     <string name="piko_follower_tracker_captured_summary_no_time">%d recorded -- capture time not known</string>
     <string name="piko_follower_tracker_captured_hint">Tap a list to show the names it recorded.</string>
+    <string name="piko_follower_tracker_section_diagnostics">Diagnostics</string>
+    <string name="piko_follower_tracker_diag_toggle">Tracking toggle: %s</string>
 
     <!-- App Icon Section -->
     <string name="piko_app_icon_title">App icon</string>

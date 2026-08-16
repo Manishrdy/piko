@@ -50,7 +50,12 @@ public class FollowerTrackerDiffEngine {
     // the "which list is this parse for" context flag, since the response
     // parser class itself is a stateless singleton with nothing to read.
     public static void onListScreenOpened(String listType) {
-        if (!isEnabled()) return;
+        // Recorded before the enabled check on purpose: otherwise "the hook
+        // never fired" and "the hook fired but the toggle was off" are
+        // indistinguishable on the history screen.
+        boolean enabled = isEnabled();
+        FollowerTrackerDiagnostics.recordScreenOpened(listType, enabled);
+        if (!enabled) return;
         try {
             // Settle the previous visit before starting a new one, whichever
             // list it was for -- reopening the same list would otherwise wipe
@@ -66,18 +71,26 @@ public class FollowerTrackerDiffEngine {
                 seedingVisits.add(listType);
             }
         } catch (Exception e) {
+            FollowerTrackerDiagnostics.recordError(e);
             PikoUtils.logger(e);
         }
     }
 
     // Called after each page of the followers/following list finishes parsing.
     public static void onListParsed(Object parsedResult) {
-        if (!isEnabled()) return;
+        boolean enabled = isEnabled();
         try {
+            List<FollowerListEntry> pageEntries = enabled
+                    ? extractEntries(parsedResult)
+                    : new ArrayList<>();
+            // The parsed object's class name is worth recording even when the
+            // extraction found nothing -- it is the only way to tell "the hook
+            // is on the wrong method" from "the reflection missed the field".
+            FollowerTrackerDiagnostics.recordParsed(parsedResult, pageEntries.size(), enabled);
+            if (!enabled) return;
+
             String listType = currentListType;
             if (listType == null) return;
-
-            List<FollowerListEntry> pageEntries = extractEntries(parsedResult);
             if (pageEntries.isEmpty()) return;
 
             LinkedHashMap<String, FollowerListEntry> visit =
@@ -91,6 +104,7 @@ public class FollowerTrackerDiffEngine {
 
             scheduleFinalize(listType);
         } catch (Exception e) {
+            FollowerTrackerDiagnostics.recordError(e);
             PikoUtils.logger(e);
         }
     }
@@ -115,6 +129,7 @@ public class FollowerTrackerDiffEngine {
             // than announcing every existing follower as a brand new one.
             if (seedingVisits.contains(listType) || !FollowerTrackerSharedPref.hasBaseline(listType)) {
                 FollowerTrackerSharedPref.saveBaseline(listType, visit);
+                FollowerTrackerDiagnostics.recordFinalized(visit.size());
                 return;
             }
 
@@ -138,12 +153,14 @@ public class FollowerTrackerDiffEngine {
             }
 
             mergeBack(listType, baseline, visit);
+            FollowerTrackerDiagnostics.recordFinalized(visit.size());
 
             if (newUsernames.isEmpty() && goneUsernames.isEmpty()) return;
 
             FollowerTrackerSharedPref.appendEvents(listType, newUsernames, goneUsernames);
             FollowerTrackerNotifier.notifyChanges(listType, newUsernames, goneUsernames);
         } catch (Exception e) {
+            FollowerTrackerDiagnostics.recordError(e);
             PikoUtils.logger(e);
         }
     }

@@ -36,9 +36,11 @@ import java.util.Map;
 import app.morphe.extension.crimera.PikoUtils;
 import app.morphe.extension.instagram.constants.UI;
 import app.morphe.extension.instagram.patches.followerTracker.FollowerListEntry;
+import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerDiagnostics;
 import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerDiffEngine;
 import app.morphe.extension.instagram.patches.followerTracker.FollowerTrackerSharedPref;
 import app.morphe.extension.instagram.settings.preference.widgets.InstagramPreferenceStyle;
+import app.morphe.extension.instagram.utils.Pref;
 
 // Lives under settings.preference.fragments (not patches.followerTracker) --
 // MaterialYouTheme classifies "piko settings activities" by package prefix,
@@ -153,6 +155,7 @@ public class HistoryActivity extends Activity {
 
         DateFormat capturedDateFormat = android.text.format.DateFormat.getDateFormat(this);
         DateFormat capturedTimeFormat = android.text.format.DateFormat.getTimeFormat(this);
+        buildDiagnosticsSection(list);
         buildCapturedSection(list, capturedDateFormat, capturedTimeFormat);
 
         list.addView(buildSectionHeader(str("piko_follower_tracker_section_activity")));
@@ -183,6 +186,27 @@ public class HistoryActivity extends Activity {
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
         return scrollView;
+    }
+
+    // Whether the injected hooks are running at all. Sits above everything else
+    // because it is the only section with anything to say when capture is
+    // broken, which is exactly when this screen gets opened in anger.
+    private void buildDiagnosticsSection(LinearLayout list) {
+        list.addView(buildSectionHeader(str("piko_follower_tracker_section_diagnostics")));
+
+        TextView toggle = new TextView(this);
+        toggle.setText(str("piko_follower_tracker_diag_toggle",
+                Pref.followerTrackerEnabled() ? "on" : "off"));
+        toggle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        toggle.setTextColor(InstagramPreferenceStyle.primaryTextColor());
+        list.addView(toggle);
+
+        TextView probes = new TextView(this);
+        probes.setText(String.join("\n", FollowerTrackerDiagnostics.summaryLines()));
+        probes.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        probes.setTextColor(InstagramPreferenceStyle.secondaryTextColor());
+        probes.setPadding(0, InstagramPreferenceStyle.dp(this, 6), 0, InstagramPreferenceStyle.dp(this, 4));
+        list.addView(probes);
     }
 
     // What actually got recorded, as opposed to what changed. Exists mainly to
