@@ -55,18 +55,6 @@ public class HookFlags {
 //        BOOL_FLAGS.put("80654", false); //ig_meta_ai_cdd_reels_viewer
     }
 
-    // restore old search null state - keeping 25 recent searches instead of meta ai suggestions
-    private static void restoreSearchRecentsFlags() {
-        BOOL_FLAGS.put("111509::3", false); //ig_search_ta_nullstate_suggestions::is_android_enabled
-        BOOL_FLAGS.put("111509::9", false); //ig_search_ta_nullstate_suggestions::collapsible_recent_items_enabled_android
-        BOOL_FLAGS.put("111509::21", false); //ig_search_ta_nullstate_suggestions::enable_h_scroll_recent_android
-        BOOL_FLAGS.put("111509::25", false); //ig_search_ta_nullstate_suggestions::enable_search_bar_hint_carousel_android
-        BOOL_FLAGS.put("111509::26", false); //ig_search_ta_nullstate_suggestions::enable_search_bar_hint_carousel_dynamic_android
-        BOOL_FLAGS.put("63806::0", false); //ig_su_in_search_null_state::is_enabled
-        LONG_FLAGS.put("111509::17", 25L); //ig_search_ta_nullstate_suggestions::android_max_recent_count
-        LONG_FLAGS.put("111509::1", 25L); //ig_search_ta_nullstate_suggestions::max_recent_count
-    }
-
     private static void profileActionBarFlags() {
         Set<String> pref = Pref.userProfileActionBarButtons();
         if(!pref.isEmpty()) {
@@ -95,6 +83,8 @@ public class HookFlags {
         if(SettingsStatus.recommendedFlags) {
             Map<String, Boolean> recFlags = FlagsSharedPref.getAll();
             BOOL_FLAGS.putAll(recFlags);
+            Map<String, Long> recLongFlags = FlagsSharedPref.getAllLong();
+            LONG_FLAGS.putAll(recLongFlags);
         }
     }
 
