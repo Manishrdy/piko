@@ -365,9 +365,4 @@
     <string name="piko_media_activity">activity</string>
 
 
-    <!-- App Icon Section -->
-    <string name="piko_app_icon_title">App icon</string>
-    <string name="piko_app_icon_hint">Pick the icon shown on your home screen. It may take a moment to update, and some launchers only refresh it once you leave the home screen.</string>
-    <string name="piko_app_icon_default">Default</string>
-    <string name="piko_app_icon_applied">Icon changed</string>
 </resources>

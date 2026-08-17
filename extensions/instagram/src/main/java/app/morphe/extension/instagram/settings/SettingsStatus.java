@@ -9,7 +9,6 @@ package app.morphe.extension.instagram.settings;
 import java.util.TreeMap;
 import static app.morphe.extension.instagram.utils.IgStr.str;
 
-import app.morphe.extension.instagram.patches.appIcon.AppIconManager;
 
 public class SettingsStatus {
     public static TreeMap<String,Boolean> FLAGS = new TreeMap();
@@ -232,11 +231,6 @@ public class SettingsStatus {
 
     // Follower tracker section.
 
-    // App icon section.
-    public static boolean appIcon = false;
-    public static void appIcon() { appIcon = true; }
-    public static boolean appIconSection(){return appIcon; }
-
 
         public static void loadStatusMap(){
         FLAGS.put(str("piko_disable_ads"),SettingsStatus.disableAds);
@@ -319,11 +313,5 @@ public class SettingsStatus {
 
     public static void load() {
         loadStatusMap();
-
-        if (appIcon) {
-            // Off the main thread: this talks to the package manager over binder, and
-            // app start is the wrong place to block on that.
-            new Thread(AppIconManager::reconcile, "piko-app-icon-reconcile").start();
-        }
     }
 }

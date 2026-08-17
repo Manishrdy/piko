@@ -64,8 +64,7 @@ public class ButtonPref extends Preference {
 
                     if (key.equals("piko_export_dev_overrides") || key.equals("piko_import_dev_overrides") || key.equals("piko_import_id_mapping")
                             || key.equals("piko_export_pref") || key.equals("piko_import_pref")
-                            || key.equals("piko_download_set_path")
-                            || key.equals(Constants.PIKO_APP_ICON_PICKER)) {
+                            || key.equals("piko_download_set_path")) {
                         ActivityHook.launchFragment((Activity) context, key);
                         
                     } else if (key.equals("piko_reset_pref")) {
@@ -156,9 +155,7 @@ public class ButtonPref extends Preference {
     }
 
     private static boolean hasPressedHighlight(String key) {
-        // The app icon picker sits alongside the fragment rows on the settings root,
-        // so it gets the same press feedback even though it opens an activity directly.
-        return (isFragmentNavigation(key) || Constants.PIKO_APP_ICON_PICKER.equals(key))
+        return isFragmentNavigation(key)
                 && !Constants.PIKO_FRAGMENT_REC_FLAGS.equals(key);
     }
 
@@ -201,9 +198,6 @@ public class ButtonPref extends Preference {
         }
         if(key.equals(Constants.PIKO_FRAGMENT_FILTER_CONTENT)){
             return UI.DRAWABLE_SHARE_TO_REEL;
-        }
-        if(key.equals(Constants.PIKO_APP_ICON_PICKER)){
-            return UI.DRAWABLE_APP_ICON;
         }
         return null;
     }
