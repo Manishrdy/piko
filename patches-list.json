@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "3.9.0-dev.9-fork.2",
+  "version": "3.9.0-dev.9-fork.3",
   "patches": [
     {
       "name": "Add ability to copy media link",
@@ -178,37 +178,6 @@
             {
               "version": "12.17.0-release.0",
               "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Change app icon",
-      "description": "Adds an app icon picker to piko settings. Offers the icons piko bundles alongside the alternate icons Instagram already ships.",
-      "default": true,
-      "dependencies": [
-        "BytecodePatch",
-        "ResourcePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "com.instagram.android",
-          "name": "Instagram",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#FC483C",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "439.0.0.37.89",
-              "versionCodes": {
-                "ARM64_V8A": 384510827
-              },
               "isExperimental": false,
               "minSdk": null,
               "description": null
