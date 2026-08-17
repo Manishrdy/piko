@@ -231,9 +231,6 @@ public class SettingsStatus {
     public static boolean filterContentSection(){return storyFilters; }
 
     // Follower tracker section.
-    public static boolean followerTracker = false;
-    public static void followerTracker() { followerTracker = true; }
-    public static boolean followerTrackerSection(){return followerTracker; }
 
     // App icon section.
     public static boolean appIcon = false;
@@ -317,7 +314,6 @@ public class SettingsStatus {
         FLAGS.put(str("piko_enable_mark_chat_as_read"),SettingsStatus.markChatAsRead);
         FLAGS.put(str("piko_category_filter_content"),SettingsStatus.storyFilters);
         FLAGS.put(str("piko_category_rec_flags"),SettingsStatus.recommendedFlags);
-        FLAGS.put(str("piko_category_follower_tracker"),SettingsStatus.followerTracker);
 
     }
 

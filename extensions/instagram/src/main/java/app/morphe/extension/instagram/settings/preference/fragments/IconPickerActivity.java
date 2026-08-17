@@ -33,7 +33,7 @@ import app.morphe.extension.instagram.patches.appIcon.AppIconManager;
 import app.morphe.extension.instagram.settings.preference.widgets.InstagramPreferenceStyle;
 import app.morphe.extension.shared.Utils;
 
-// Lives under settings.preference.fragments for the same reason HistoryActivity does --
+// Lives under settings.preference.fragments deliberately --
 // MaterialYouTheme classifies "piko settings activities" by the
 // app.morphe.extension.instagram.settings. package prefix, and only that classification
 // skips overwriting the app-wide observed dark theme state with this activity's reading.

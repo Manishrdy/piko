@@ -53,7 +53,6 @@ val addSettingsActivityPatch =
                 // at an Instagram attribute which does not always resolve, and an unresolved
                 // attribute makes TypedArray.getColorStateList throw.
                 listOf(
-                    "app.morphe.extension.instagram.settings.preference.fragments.HistoryActivity",
                     "app.morphe.extension.instagram.settings.preference.fragments.IconPickerActivity",
                 ).forEach { activityName ->
                     activity = document.createElement("activity")

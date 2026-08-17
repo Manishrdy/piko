@@ -364,29 +364,6 @@
     <string name="piko_media_link">link</string>
     <string name="piko_media_activity">activity</string>
 
-    <!-- Follower Tracker Section -->
-    <string name="piko_category_follower_tracker">Follower Tracker</string>
-    <string name="piko_follower_tracker_enabled">Track followers/following</string>
-    <string name="piko_follower_tracker_enabled_desc">Detects who followed or unfollowed you by comparing what you see each time you open your Followers/Following list. Never polls or makes extra requests -- only looks at data your own browsing already loaded.</string>
-    <string name="piko_follower_tracker_view_history">View history</string>
-    <string name="piko_follower_tracker_history_title">Follower activity</string>
-    <string name="piko_follower_tracker_history_empty">No follow/unfollow activity detected yet.</string>
-    <string name="piko_follower_tracker_notif_title_followers">Followers changed</string>
-    <string name="piko_follower_tracker_notif_title_following">Following changed</string>
-    <string name="piko_follower_tracker_notif_new">%d new: %s</string>
-    <string name="piko_follower_tracker_notif_gone">%d gone: %s</string>
-    <string name="piko_follower_tracker_event_new_follower">%s followed you -- %s %s</string>
-    <string name="piko_follower_tracker_event_unfollowed_you">%s unfollowed you -- %s %s</string>
-    <string name="piko_follower_tracker_event_new_following">You followed %s -- %s %s</string>
-    <string name="piko_follower_tracker_event_unfollowed">You unfollowed %s -- %s %s</string>
-    <string name="piko_follower_tracker_section_captured">Captured lists</string>
-    <string name="piko_follower_tracker_section_activity">Activity</string>
-    <string name="piko_follower_tracker_captured_none">Nothing captured yet. Open your Followers or Following list and scroll, then come back.</string>
-    <string name="piko_follower_tracker_captured_summary">%d recorded -- last captured %s %s</string>
-    <string name="piko_follower_tracker_captured_summary_no_time">%d recorded -- capture time not known</string>
-    <string name="piko_follower_tracker_captured_hint">Tap a list to show the names it recorded.</string>
-    <string name="piko_follower_tracker_section_diagnostics">Diagnostics</string>
-    <string name="piko_follower_tracker_diag_toggle">Tracking toggle: %s</string>
 
     <!-- App Icon Section -->
     <string name="piko_app_icon_title">App icon</string>

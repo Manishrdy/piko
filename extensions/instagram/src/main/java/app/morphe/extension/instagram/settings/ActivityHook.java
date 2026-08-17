@@ -15,7 +15,6 @@ import android.net.Uri;
 
 import app.morphe.extension.crimera.PikoUtils;
 import app.morphe.extension.instagram.settings.preference.fragments.BackupPrefActivity;
-import app.morphe.extension.instagram.settings.preference.fragments.HistoryActivity;
 import app.morphe.extension.instagram.settings.preference.fragments.IconPickerActivity;
 import app.morphe.extension.instagram.settings.preference.fragments.RestorePrefActivity;
 import app.morphe.extension.crimera.downloader.FolderPickerActivity;
@@ -52,8 +51,6 @@ public class ActivityHook {
             intent = new Intent(ctx,RestorePrefActivity.class);
         } else if (bundleKey.equals("piko_download_set_path")) {
             intent = new Intent(ctx,FolderPickerActivity.class);
-        } else if (bundleKey.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)) {
-            intent = new Intent(ctx, HistoryActivity.class);
         } else if (bundleKey.equals(Constants.PIKO_APP_ICON_PICKER)) {
             intent = new Intent(ctx, IconPickerActivity.class);
         }

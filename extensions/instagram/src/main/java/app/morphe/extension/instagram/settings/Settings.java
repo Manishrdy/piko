@@ -99,5 +99,4 @@ public class Settings {
     public static final StringSetting FILTER_STORY_MIN_STORY_ITEMS = new StringSetting("filter_story_min_story_items", "1");
     public static final StringSetting FILTER_STORY_MAX_STORY_ITEMS = new StringSetting("filter_story_max_story_items", "9999");
 
-    public static final BooleanSetting FOLLOWER_TRACKER_ENABLED = new BooleanSetting("follower_tracker_enabled", false);
 }

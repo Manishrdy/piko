@@ -64,7 +64,7 @@ public class ButtonPref extends Preference {
 
                     if (key.equals("piko_export_dev_overrides") || key.equals("piko_import_dev_overrides") || key.equals("piko_import_id_mapping")
                             || key.equals("piko_export_pref") || key.equals("piko_import_pref")
-                            || key.equals("piko_download_set_path") || key.equals(Constants.PIKO_FOLLOWER_TRACKER_VIEW_HISTORY)
+                            || key.equals("piko_download_set_path")
                             || key.equals(Constants.PIKO_APP_ICON_PICKER)) {
                         ActivityHook.launchFragment((Activity) context, key);
                         
@@ -201,9 +201,6 @@ public class ButtonPref extends Preference {
         }
         if(key.equals(Constants.PIKO_FRAGMENT_FILTER_CONTENT)){
             return UI.DRAWABLE_SHARE_TO_REEL;
-        }
-        if(key.equals(Constants.PIKO_FRAGMENT_FOLLOWER_TRACKER)){
-            return UI.DRAWABLE_USERS_ICON;
         }
         if(key.equals(Constants.PIKO_APP_ICON_PICKER)){
             return UI.DRAWABLE_APP_ICON;
