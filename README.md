@@ -72,7 +72,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 ## ⚙️ Patch Details
 
 <!-- PATCHES_START -->
-> **[v3.9.0-dev.9-fork.3](https://github.com/Manishrdy/piko/releases/tag/v3.9.0-dev.9-fork.3)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;134 patches total
+> **[v3.9.0-dev.9-fork.4](https://github.com/Manishrdy/piko/releases/tag/v3.9.0-dev.9-fork.4)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;133 patches total
 <details>
 <summary>📦 Twitter&nbsp;&nbsp;•&nbsp;&nbsp;74 patches</summary>
 <br>
@@ -162,7 +162,7 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 </details>
 
 <details>
-<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;60 patches</summary>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;59 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -218,7 +218,6 @@ To patch with Twitter/X version 11.88 and above, you must include patches from a
 | [Recommended flags](#recommended-flags) | Developer flags suggested by the community |  |
 | [Remove build expired popup](#remove-build-expired-popup) | Removes the popup that appears after a while, when the app version ages. |  |
 | [Remove empty bottom space](#remove-empty-bottom-space) | Removes empty space below bottom navigation bar |  |
-| [Restore classic search recents](#restore-classic-search-recents) | Restores the old search with up to 25 recent profiles, replacing Meta AI suggestions and collapsed recents. |  |
 | [Sanitize share links](#sanitize-share-links) |  |  |
 | [Save deleted messages](#save-deleted-messages) | Captures incoming DMs locally as they arrive from the server and marks them when the sender deletes them. |  |
 | [Save media comment](#save-media-comment) | Adds a button to save media comments on posts and reels. |  |
