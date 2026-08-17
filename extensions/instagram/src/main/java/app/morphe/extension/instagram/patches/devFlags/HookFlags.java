@@ -55,6 +55,7 @@ public class HookFlags {
 //        BOOL_FLAGS.put("80654", false); //ig_meta_ai_cdd_reels_viewer
     }
 
+    // restore old search null state - keeping 25 recent searches instead of meta ai suggestions
     private static void restoreSearchRecentsFlags() {
         BOOL_FLAGS.put("111509::3", false); //ig_search_ta_nullstate_suggestions::is_android_enabled
         BOOL_FLAGS.put("111509::9", false); //ig_search_ta_nullstate_suggestions::collapsible_recent_items_enabled_android
@@ -119,6 +120,8 @@ public class HookFlags {
         return null;
     }
 
+    // mobileConfig has no dedicated int type, hence the integer-valued flags (counts, limits) are stored and returned.
+    // as long instead of boolean
     public static Long handleLongFlags(long mobileConfigSpecifier) {
         try {
             DeveloperOptionsItem developerOptionsItem = new DeveloperOptionsItem(mobileConfigSpecifier);

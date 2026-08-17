@@ -61,8 +61,6 @@ val hookFlagsPatch =
                             )
                         }
 
-                    // Long/int flag check method (MobileConfig has no dedicated int type,
-                    // integer-valued flags are stored and returned as long).
                     methods
                         .first {
                             it.returnType == "J" && it.parameters.size == 3 &&

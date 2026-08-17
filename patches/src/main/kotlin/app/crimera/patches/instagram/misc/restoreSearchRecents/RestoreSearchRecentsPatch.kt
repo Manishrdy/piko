@@ -4,7 +4,7 @@
  * See the included NOTICE file for GPLv3 §7(b) terms that apply to this code.
  */
 
-package app.crimera.patches.instagram.fork.search
+package app.crimera.patches.instagram.misc.restoreSearchRecents
 
 import app.crimera.patches.instagram.misc.hookFlags.hookFlagsPatch
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
@@ -15,7 +15,7 @@ import app.morphe.patcher.patch.bytecodePatch
 val restoreSearchRecentsPatch =
     bytecodePatch(
         name = "Restore classic search recents",
-        description = "Restores the old search empty-state (up to 25 recent profiles) instead of Meta AI suggestions and the collapsed recents list.",
+        description = "Restores the old search with up to 25 recent profiles, replacing Meta AI suggestions and collapsed recents.",
         default = true,
     ) {
         compatibleWith(COMPATIBILITY_INSTAGRAM)
