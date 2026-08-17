@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "3.9.0-dev.9-fork.1",
+  "version": "3.9.0-dev.9-fork.2",
   "patches": [
     {
       "name": "Add ability to copy media link",
@@ -2803,37 +2803,6 @@
       "options": []
     },
     {
-      "name": "Local follower/unfollower tracker",
-      "description": "Detects who followed/unfollowed you by comparing what you see each time you open your Followers/Following list. Never polls or makes extra requests.",
-      "default": true,
-      "dependencies": [
-        "BytecodePatch",
-        "BytecodePatch"
-      ],
-      "compatiblePackages": [
-        {
-          "packageName": "com.instagram.android",
-          "name": "Instagram",
-          "description": null,
-          "apkFileType": "APKM",
-          "appIconColor": "#FC483C",
-          "signatures": null,
-          "targets": [
-            {
-              "version": "439.0.0.37.89",
-              "versionCodes": {
-                "ARM64_V8A": 384510827
-              },
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Log server response",
       "description": "Log json responses received from server",
       "default": true,
@@ -3443,7 +3412,7 @@
     },
     {
       "name": "Restore classic search recents",
-      "description": "Restores the old search empty-state (up to 25 recent profiles) instead of Meta AI suggestions and the collapsed recents list.",
+      "description": "Restores the old search with up to 25 recent profiles, replacing Meta AI suggestions and collapsed recents.",
       "default": true,
       "dependencies": [
         "BytecodePatch"
