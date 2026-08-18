@@ -24,7 +24,9 @@ public class Constants {
     // https://www.instagram.com/reel/<short code>/
     // https://www.instagram.com/stories/<user name>/<post id>
     public static final String REC_FLAGS = PIKO + "_recommended_flags_v3";
-    public static final String PIKO_MAPPINGS_PATH = "https://github.com/crimera/piko/raw/refs/heads/dev/docs/mappings/";
+    // Temporarily pointed at the fork until PR #1741 (search-recents flags) merges upstream --
+    // revert to crimera/piko once it lands there.
+    public static final String PIKO_MAPPINGS_PATH = "https://github.com/Manishrdy/piko/raw/refs/heads/dev/docs/mappings/";
 
     public static final String AB_SETTINGS_ICON = "SETTINGS_ICON";
     public static final String AB_GHOST_MODE_ICON = "GHOST_MODE_ICON";
