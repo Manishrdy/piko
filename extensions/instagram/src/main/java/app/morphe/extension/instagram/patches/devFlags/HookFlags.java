@@ -103,11 +103,7 @@ public class HookFlags {
             if(universalFlag!=null) return universalFlag;
 
             String configId = developerOptionsItem.getConfigId();
-            // TEMP DEBUG: log every bool flag Instagram checks, to diff which MobileConfig
-            // IDs a private account hits vs a personal one on the search screen. Remove once done.
-            Boolean configFlag = BOOL_FLAGS.getOrDefault(configId, null);
-            PikoUtils.logger("DEBUG_BOOL_CHECK " + configId + " -> " + configFlag);
-            return configFlag;
+            return BOOL_FLAGS.getOrDefault(configId, null);
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
@@ -124,10 +120,7 @@ public class HookFlags {
             if(universalFlag!=null) return universalFlag;
 
             String configId = developerOptionsItem.getConfigId();
-            // TEMP DEBUG: same as above, for long-typed flags. Remove once done.
-            Long configFlag = LONG_FLAGS.getOrDefault(configId, null);
-            PikoUtils.logger("DEBUG_LONG_CHECK " + configId + " -> " + configFlag);
-            return configFlag;
+            return LONG_FLAGS.getOrDefault(configId, null);
         } catch (Exception e) {
             PikoUtils.logger(e);
         }
