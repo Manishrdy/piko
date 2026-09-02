@@ -59,12 +59,40 @@ jobs:
 
       - name: Merge upstream/dev
         if: steps.check.outputs.proceed == 'true'
-        # -X theirs: upstream wins on any line-level conflict (e.g. our
-        # patches-bundle.json/README overlay from the previous sync). Files
-        # that only exist on our side -- e.g. fork-only patches under
-        # patches/src/main/kotlin/app/crimera/patches/fork/ -- are untouched
-        # by this merge since upstream has nothing to conflict with there.
-        run: git merge upstream/dev --no-edit -X theirs
+        # Known fork-overlay files (patches-bundle.json/patches-list.json/
+        # README.md) get fully regenerated a few steps down regardless of
+        # what the merge produces, so upstream is safe to prefer there on
+        # conflict. Anything else conflicting is a real collision between an
+        # upstream change and one of the fork's own patches -- auto-picking
+        # either side repo-wide (the old `-X theirs`) is unsafe, since it can
+        # silently drop a fork patch or leave code that doesn't compile, as
+        # happened when both sides added an import on the same line in
+        # EditTextPref.java. So only auto-resolve the overlay files; fail
+        # loudly on anything else and let a human resolve it.
+        run: |
+          if git merge upstream/dev --no-edit; then
+            exit 0
+          fi
+
+          conflicts=$(git diff --name-only --diff-filter=U)
+          overlay_files="patches-bundle.json patches-list.json README.md"
+          remaining="$conflicts"
+          for f in $overlay_files; do
+            if echo "$conflicts" | grep -qx "$f"; then
+              git checkout --theirs -- "$f"
+              git add "$f"
+              remaining=$(echo "$remaining" | grep -vx "$f")
+            fi
+          done
+
+          if [ -n "$remaining" ]; then
+            echo "::error::Merge conflict outside the known fork overlay -- resolve manually:"
+            echo "$remaining"
+            git merge --abort
+            exit 1
+          fi
+
+          git commit --no-edit
 
       - name: Read version
         if: steps.check.outputs.proceed == 'true'
