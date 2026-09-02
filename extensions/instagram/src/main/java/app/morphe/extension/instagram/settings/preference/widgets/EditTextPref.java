@@ -13,7 +13,6 @@ import android.preference.Preference;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import app.morphe.extension.instagram.patches.Links;
 import app.morphe.extension.instagram.patches.devFlags.FlagState;
 import app.morphe.extension.instagram.settings.Settings;
@@ -76,7 +75,7 @@ public class EditTextPref extends EditTextPreference {
     }
 
     @Override
-    protected void onAddEditTextToDialogView(View dialogView, EditText editText) {
+    protected void onAddEditTextToDialogView(View dialogView, android.widget.EditText editText) {
         super.onAddEditTextToDialogView(dialogView, editText);
         // Numeric (long-typed) dev flags persist FlagState.DEFAULT ("default") as
         // their "no override" sentinel; blank the field here so the number box
