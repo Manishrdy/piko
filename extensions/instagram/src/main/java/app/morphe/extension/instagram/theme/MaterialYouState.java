@@ -132,9 +132,10 @@ final class MaterialYouState {
             Integer nativeMode,
             boolean requestedInstagramDark
     ) {
-        return nativeMode == null
-                ? observedInstagramDark
-                : requestedInstagramDark;
+        if (nativeMode == null) {
+            return observedInstagramDark;
+        }
+        return requestedInstagramDark;
     }
 
     static boolean resolveInstagramDark(
